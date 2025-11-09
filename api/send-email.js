@@ -31,6 +31,9 @@ module.exports = async (req, res) => {
         'X-Entity-Ref-ID': `hp-${Date.now()}`,
         'List-Unsubscribe': '<https://hostpenny.co.uk/unsubscribe>',
         'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+        'Importance': 'high',
+        'X-Priority': '1',
+        'X-MSMail-Priority': 'High',
       },
     });
 

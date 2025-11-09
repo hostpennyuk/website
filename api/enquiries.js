@@ -92,6 +92,9 @@ module.exports = async (req, res) => {
           `,
           headers: {
             'X-Entity-Ref-ID': `enquiry-${enquiry._id}`,
+            'Importance': 'high',
+            'X-Priority': '1',
+            'X-MSMail-Priority': 'High',
           },
         }).catch(err => console.error('Email failed:', err));
       }
