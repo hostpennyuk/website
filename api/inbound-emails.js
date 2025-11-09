@@ -87,6 +87,70 @@ module.exports = async (req, res) => {
       });
 
       await inboundEmail.save();
+
+      // Forward to Gmail
+      if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+        try {
+          const nodemailer = require('nodemailer');
+          
+          const transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST || 'smtp.gmail.com',
+            port: parseInt(process.env.SMTP_PORT || '587'),
+            secure: false,
+            auth: {
+              user: process.env.SMTP_USER,
+              pass: process.env.SMTP_PASS,
+            },
+          });
+
+          const fromEmail = emailData.from?.email || emailData.from;
+          const fromName = emailData.from?.name || fromEmail;
+
+          await transporter.sendMail({
+            from: `"${fromName} (via HostPenny)" <${process.env.SMTP_USER}>`,
+            to: 'hostpennyuk@gmail.com',
+            replyTo: fromEmail,
+            subject: `[Fwd: hello@hostpenny.co.uk] ${emailData.subject || '(No Subject)'}`,
+            text: `
+Original From: ${fromName} <${fromEmail}>
+Original To: ${emailData.to}
+Original Subject: ${emailData.subject || '(No Subject)'}
+
+---
+
+${emailData.text || emailData.plain_text || 'No text content'}
+            `,
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <div style="background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: white; padding: 15px; border-radius: 8px 8px 0 0;">
+                  <h3 style="margin: 0;">📧 Forwarded Email from hello@hostpenny.co.uk</h3>
+                </div>
+                <div style="border: 1px solid #ddd; border-top: none; padding: 20px; background: #f9f9f9;">
+                  <p><strong>From:</strong> ${fromName} &lt;${fromEmail}&gt;</p>
+                  <p><strong>To:</strong> ${emailData.to}</p>
+                  <p><strong>Subject:</strong> ${emailData.subject || '(No Subject)'}</p>
+                  <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+                  <div style="background: white; padding: 15px; border-radius: 8px;">
+                    ${emailData.html || emailData.html_body || emailData.text || 'No content'}
+                  </div>
+                </div>
+                <div style="background: #f5f5f5; padding: 10px; text-align: center; font-size: 12px; color: #666; border-radius: 0 0 8px 8px;">
+                  <p style="margin: 0;">View and reply to this email in your <a href="https://hostpenny.co.uk/admin" style="color: #8b5cf6;">Admin Dashboard</a></p>
+                </div>
+              </div>
+            `,
+          });
+
+          inboundEmail.forwardedToGmail = true;
+          inboundEmail.forwardedAt = new Date();
+          await inboundEmail.save();
+          
+          console.log('✅ Email forwarded to hostpennyuk@gmail.com');
+        } catch (error) {
+          console.error('❌ Failed to forward to Gmail:', error.message);
+        }
+      }
+
       return res.status(200).json({ success: true, id: inboundEmail._id });
     }
 
