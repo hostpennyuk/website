@@ -1,0 +1,195 @@
+const mongoose = require('mongoose');
+
+let cachedDb = null;
+
+async function connectDB() {
+  if (cachedDb) return cachedDb;
+  
+  const conn = await mongoose.connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
+  
+  cachedDb = conn;
+  return conn;
+}
+
+const InboundEmailSchema = new mongoose.Schema({
+  messageId: { type: String, required: true, unique: true },
+  from: {
+    email: { type: String, required: true },
+    name: { type: String },
+  },
+  to: [{ email: { type: String, required: true }, name: { type: String } }],
+  cc: [{ email: { type: String }, name: { type: String } }],
+  bcc: [{ email: { type: String }, name: { type: String } }],
+  subject: { type: String, required: true },
+  text: String,
+  html: String,
+  receivedAt: { type: Date, default: Date.now },
+  read: { type: Boolean, default: false },
+  starred: { type: Boolean, default: false },
+  archived: { type: Boolean, default: false },
+  labels: [String],
+  attachments: [{
+    filename: String,
+    contentType: String,
+    size: Number,
+    url: String,
+  }],
+  replyTo: { email: String, name: String },
+  inReplyTo: String,
+  references: [String],
+  forwardedToGmail: { type: Boolean, default: false },
+  forwardedAt: Date,
+}, { timestamps: true });
+
+InboundEmailSchema.index({ receivedAt: -1 });
+InboundEmailSchema.index({ 'from.email': 1 });
+InboundEmailSchema.index({ read: 1 });
+InboundEmailSchema.index({ archived: 1 });
+
+module.exports = async (req, res) => {
+  await connectDB();
+  
+  const InboundEmail = mongoose.models.InboundEmail || mongoose.model('InboundEmail', InboundEmailSchema);
+
+  try {
+    // Handle different HTTP methods and routes
+    const { method } = req;
+    const pathParts = req.url.split('?')[0].split('/').filter(Boolean);
+    const emailId = pathParts[pathParts.length - 1];
+    const action = pathParts[pathParts.length - 2];
+
+    // POST /api/inbound-emails - Create/Receive new email (webhook)
+    if (method === 'POST' && !emailId) {
+      const emailData = req.body;
+      
+      const inboundEmail = new InboundEmail({
+        messageId: emailData.message_id || emailData.id,
+        from: {
+          email: emailData.from?.email || emailData.from,
+          name: emailData.from?.name,
+        },
+        to: Array.isArray(emailData.to) ? emailData.to : [{ email: emailData.to }],
+        cc: emailData.cc || [],
+        bcc: emailData.bcc || [],
+        subject: emailData.subject || '(No Subject)',
+        text: emailData.text || emailData.plain_text,
+        html: emailData.html || emailData.html_body,
+        replyTo: emailData.reply_to ? {
+          email: emailData.reply_to.email || emailData.reply_to,
+          name: emailData.reply_to.name,
+        } : null,
+        attachments: emailData.attachments || [],
+        inReplyTo: emailData.in_reply_to,
+        references: emailData.references || [],
+      });
+
+      await inboundEmail.save();
+      return res.status(200).json({ success: true, id: inboundEmail._id });
+    }
+
+    // GET /api/inbound-emails - List all emails
+    if (method === 'GET' && !emailId) {
+      const { read, archived, starred, limit = 50, skip = 0, search } = req.query;
+      
+      const filter = {};
+      if (read !== undefined) filter.read = read === 'true';
+      if (archived !== undefined) filter.archived = archived === 'true';
+      if (starred !== undefined) filter.starred = starred === 'true';
+      
+      if (search) {
+        filter.$or = [
+          { 'from.email': { $regex: search, $options: 'i' } },
+          { 'from.name': { $regex: search, $options: 'i' } },
+          { subject: { $regex: search, $options: 'i' } },
+          { text: { $regex: search, $options: 'i' } },
+        ];
+      }
+
+      const emails = await InboundEmail.find(filter)
+        .sort({ receivedAt: -1 })
+        .limit(parseInt(limit))
+        .skip(parseInt(skip));
+
+      const total = await InboundEmail.countDocuments(filter);
+      const unreadCount = await InboundEmail.countDocuments({ ...filter, read: false });
+
+      return res.json({ emails, total, unreadCount, hasMore: total > (parseInt(skip) + emails.length) });
+    }
+
+    // GET /api/inbound-emails/:id - Get single email
+    if (method === 'GET' && emailId && action !== 'reply') {
+      const email = await InboundEmail.findById(emailId);
+      if (!email) return res.status(404).json({ error: 'Email not found' });
+      return res.json(email);
+    }
+
+    // PATCH /api/inbound-emails/:id/read
+    if (method === 'PATCH' && action === 'read') {
+      const email = await InboundEmail.findByIdAndUpdate(
+        emailId,
+        { read: req.body.read },
+        { new: true }
+      );
+      return res.json(email);
+    }
+
+    // PATCH /api/inbound-emails/:id/star
+    if (method === 'PATCH' && action === 'star') {
+      const email = await InboundEmail.findByIdAndUpdate(
+        emailId,
+        { starred: req.body.starred },
+        { new: true }
+      );
+      return res.json(email);
+    }
+
+    // PATCH /api/inbound-emails/:id/archive
+    if (method === 'PATCH' && action === 'archive') {
+      const email = await InboundEmail.findByIdAndUpdate(
+        emailId,
+        { archived: req.body.archived },
+        { new: true }
+      );
+      return res.json(email);
+    }
+
+    // DELETE /api/inbound-emails/:id
+    if (method === 'DELETE' && emailId) {
+      await InboundEmail.findByIdAndDelete(emailId);
+      return res.json({ success: true });
+    }
+
+    // POST /api/inbound-emails/:id/reply - Send reply
+    if (method === 'POST' && action === 'reply') {
+      const email = await InboundEmail.findById(emailId);
+      if (!email) return res.status(404).json({ error: 'Email not found' });
+
+      const { Resend } = require('resend');
+      const resend = new Resend(process.env.RESEND_API_KEY);
+
+      const { data, error } = await resend.emails.send({
+        from: process.env.EMAIL_FROM || 'hello@hostpenny.co.uk',
+        to: email.from.email,
+        subject: req.body.subject || `Re: ${email.subject}`,
+        html: req.body.html,
+        reply_to: process.env.EMAIL_FROM || 'hello@hostpenny.co.uk',
+        in_reply_to: email.messageId,
+      });
+
+      if (error) throw new Error(error.message);
+
+      email.read = true;
+      await email.save();
+
+      return res.json({ success: true, messageId: data.id });
+    }
+
+    res.status(405).json({ error: 'Method not allowed' });
+  } catch (error) {
+    console.error('Inbound emails API error:', error);
+    res.status(500).json({ error: error.message });
+  }
+};

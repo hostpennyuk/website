@@ -33,6 +33,7 @@ import {
   updateEnquiryAsync,
   deleteEnquiryAsync,
 } from '../store/content';
+import Inbox from './Inbox';
 
 const ADMIN_EMAIL = 'profmendel@gmail.com';
 const ADMIN_PASSWORD = 'Gig@50chin';
@@ -827,6 +828,7 @@ export default function Admin() {
               {[
                 { key:'dashboard', label:'Overview' },
                 { key:'enquiries', label:'Enquiries' },
+                { key:'inbox', label:'Inbox' },
                 { key:'testimonials', label:'Testimonials' },
                 { key:'portfolio', label:'Portfolio' },
                 { key:'emails', label:'Emails' },
@@ -858,6 +860,7 @@ export default function Admin() {
           <main className="flex-1 space-y-6">
             {tab === 'dashboard' && <DashboardTab />}
             {tab === 'enquiries' && <EnquiriesTab />}
+            {tab === 'inbox' && <Inbox />}
             {tab === 'testimonials' && <TestimonialsTab />}
             {tab === 'portfolio' && <PortfolioTab />}
             {tab === 'emails' && <EmailsTab />}
