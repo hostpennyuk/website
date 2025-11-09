@@ -219,21 +219,36 @@ const Inbox = () => {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-12rem)]">
-      {/* Email List */}
-      <div className="lg:col-span-1 bg-white border rounded-xl overflow-hidden flex flex-col">
-        {/* Search & Filters */}
-        <div className="p-4 border-b">
-          <button
-            onClick={() => {
-              setShowComposeForm(true);
-              setSelectedEmail(null);
-              setShowReplyForm(false);
-            }}
-            className="w-full mb-3 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
-          >
-            ✉️ Compose New Email
-          </button>
+    <div className="space-y-4">
+      {/* Info Banner */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="flex items-start gap-3">
+          <div className="text-blue-600 text-xl">💡</div>
+          <div className="flex-1">
+            <h3 className="font-semibold text-blue-900 mb-1">Quick Email Management</h3>
+            <p className="text-sm text-blue-700">
+              This inbox is for receiving and quickly replying to emails sent to your @hostpenny.co.uk addresses. 
+              For sending branded emails with templates, styles, and signatures, use the <strong>Emails</strong> tab in the sidebar.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-18rem)]">
+        {/* Email List */}
+        <div className="lg:col-span-1 bg-white border rounded-xl overflow-hidden flex flex-col">
+          {/* Search & Filters */}
+          <div className="p-4 border-b">
+            <button
+              onClick={() => {
+                setShowComposeForm(true);
+                setSelectedEmail(null);
+                setShowReplyForm(false);
+              }}
+              className="w-full mb-3 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
+            >
+              ✉️ Quick Compose
+            </button>
           
           <div className="relative mb-3">
             <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -321,8 +336,8 @@ const Inbox = () => {
         </div>
       </div>
 
-      {/* Email Content */}
-      <div className="lg:col-span-2 bg-white border rounded-xl overflow-hidden flex flex-col">
+        {/* Email Content */}
+        <div className="lg:col-span-2 bg-white border rounded-xl overflow-hidden flex flex-col">
         {showComposeForm ? (
           <>
             <div className="p-4 border-b bg-purple-50">
@@ -508,6 +523,7 @@ const Inbox = () => {
             <p className="text-lg">Select an email to read</p>
           </div>
         )}
+      </div>
       </div>
     </div>
   );

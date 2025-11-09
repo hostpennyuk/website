@@ -338,22 +338,76 @@ function EmailsTab() {
   const signatures = getSignatures();
   const settings = getSettings();
 
-  const send = () => {
-    if (!form.to || !form.subject) return;
-    const html = renderHtml(
-      form.body,
-      styleSel,
-      settings.logoUrl,
-      signatures.find(s=>s.id===sigSel) || signatures[0],
-      form.subject,
-      form.preheader,
-      form.ctaLabel,
-      form.ctaUrl
-    );
-    const email = { id: `${Date.now()}`, ...form, html, template: tplSel, templateStyle: styleSel, signature: sigSel, sentAt: new Date().toISOString() };
-    addEmail(email);
-    setOutbox(getEmails());
-    setForm({ to: '', subject: '', preheader: '', ctaLabel: '', ctaUrl: '', body: '' });
+  const [sending, setSending] = useState(false);
+  const [fromEmail, setFromEmail] = useState('hello@hostpenny.co.uk');
+
+  const availableFromEmails = [
+    'hello@hostpenny.co.uk',
+    'support@hostpenny.co.uk',
+    'admin@hostpenny.co.uk',
+    'info@hostpenny.co.uk',
+    'sales@hostpenny.co.uk',
+    'contact@hostpenny.co.uk',
+    'notifications@hostpenny.co.uk',
+  ];
+
+  const send = async () => {
+    if (!form.to || !form.subject) {
+      alert('Please fill in recipient email and subject');
+      return;
+    }
+    
+    setSending(true);
+    try {
+      const html = renderHtml(
+        form.body,
+        styleSel,
+        settings.logoUrl,
+        signatures.find(s=>s.id===sigSel) || signatures[0],
+        form.subject,
+        form.preheader,
+        form.ctaLabel,
+        form.ctaUrl
+      );
+
+      // Send via API
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from: fromEmail,
+          to: form.to,
+          subject: form.subject,
+          html: html,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send email');
+      }
+
+      // Store in local outbox for record keeping
+      const email = { 
+        id: `${Date.now()}`, 
+        ...form, 
+        from: fromEmail,
+        html, 
+        template: tplSel, 
+        templateStyle: styleSel, 
+        signature: sigSel, 
+        sentAt: new Date().toISOString() 
+      };
+      addEmail(email);
+      setOutbox(getEmails());
+      setForm({ to: '', subject: '', preheader: '', ctaLabel: '', ctaUrl: '', body: '' });
+      
+      alert('Email sent successfully!');
+    } catch (error) {
+      console.error('Failed to send email:', error);
+      alert('Failed to send email. Please try again.');
+    } finally {
+      setSending(false);
+    }
   };
 
   const applyTemplate = (id) => {
@@ -453,12 +507,28 @@ function EmailsTab() {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <Section title="Compose">
-        <div className="space-y-3">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-center">
-            <div className="sm:col-span-1 flex items-center gap-2">
-              <label className="text-sm text-gray-600">Template:</label>
+    <div className="space-y-4">
+      {/* Info Banner */}
+      <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-4">
+        <div className="flex items-start gap-3">
+          <div className="text-purple-600 text-xl">✨</div>
+          <div className="flex-1">
+            <h3 className="font-semibold text-purple-900 mb-1">Professional Email Composer</h3>
+            <p className="text-sm text-purple-700">
+              Create beautiful, branded emails with professional templates, custom styles, and signatures. 
+              Perfect for newsletters, announcements, and marketing campaigns. 
+              For quick replies to received emails, use the <strong>Inbox</strong> tab.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Section title="Compose Email">
+          <div className="space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-center">
+              <div className="sm:col-span-1 flex items-center gap-2">
+                <label className="text-sm text-gray-600">Template:</label>
               <select value={tplSel} onChange={(e)=>applyTemplate(e.target.value)} className="border rounded px-2 py-1 text-sm">
                 <option value="">None</option>
                 {templates.map(t=> <option key={t.id} value={t.id}>{t.name||'Untitled'}</option>)}
@@ -483,16 +553,67 @@ function EmailsTab() {
           {templates.length > 0 && (
             <div className="hidden" />
           )}
-          <input className="w-full border rounded px-3 py-2" placeholder="To (email)" value={form.to} onChange={(e)=>setForm({...form, to: e.target.value})} />
-          <input className="w-full border rounded px-3 py-2" placeholder="Subject" value={form.subject} onChange={(e)=>setForm({...form, subject: e.target.value})} />
-          <input className="w-full border rounded px-3 py-2" placeholder="Preheader (shows in inbox preview)" value={form.preheader} onChange={(e)=>setForm({...form, preheader: e.target.value})} />
+          
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <input className="w-full border rounded px-3 py-2" placeholder="CTA Label (optional)" value={form.ctaLabel} onChange={(e)=>setForm({...form, ctaLabel: e.target.value})} />
-            <input className="w-full border rounded px-3 py-2" placeholder="CTA URL (https://...) (optional)" value={form.ctaUrl} onChange={(e)=>setForm({...form, ctaUrl: e.target.value})} />
+            <div>
+              <label className="text-sm text-gray-600 mb-1 block">From:</label>
+              <select 
+                value={fromEmail} 
+                onChange={(e)=>setFromEmail(e.target.value)} 
+                className="w-full border rounded px-3 py-2"
+              >
+                {availableFromEmails.map(email => (
+                  <option key={email} value={email}>{email}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-sm text-gray-600 mb-1 block">To:</label>
+              <input 
+                className="w-full border rounded px-3 py-2" 
+                placeholder="recipient@example.com" 
+                value={form.to} 
+                onChange={(e)=>setForm({...form, to: e.target.value})} 
+              />
+            </div>
           </div>
-          <textarea className="w-full border rounded px-3 py-2" rows={8} placeholder="Message" value={form.body} onChange={(e)=>setForm({...form, body: e.target.value})} />
-          <div className="text-right">
-            <button onClick={send} className="btn-primary px-4 py-2 rounded-lg text-white">Send</button>
+          <div>
+            <label className="text-sm text-gray-600 mb-1 block">Subject:</label>
+            <input className="w-full border rounded px-3 py-2" placeholder="Email subject" value={form.subject} onChange={(e)=>setForm({...form, subject: e.target.value})} />
+          </div>
+          
+          <div>
+            <label className="text-sm text-gray-600 mb-1 block">Preheader (preview text):</label>
+            <input className="w-full border rounded px-3 py-2" placeholder="Shows in inbox preview" value={form.preheader} onChange={(e)=>setForm({...form, preheader: e.target.value})} />
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="text-sm text-gray-600 mb-1 block">CTA Button Label (optional):</label>
+              <input className="w-full border rounded px-3 py-2" placeholder="e.g., Get Started" value={form.ctaLabel} onChange={(e)=>setForm({...form, ctaLabel: e.target.value})} />
+            </div>
+            <div>
+              <label className="text-sm text-gray-600 mb-1 block">CTA Button URL (optional):</label>
+              <input className="w-full border rounded px-3 py-2" placeholder="https://..." value={form.ctaUrl} onChange={(e)=>setForm({...form, ctaUrl: e.target.value})} />
+            </div>
+          </div>
+          
+          <div>
+            <label className="text-sm text-gray-600 mb-1 block">Message:</label>
+            <textarea className="w-full border rounded px-3 py-2" rows={8} placeholder="Write your email content here..." value={form.body} onChange={(e)=>setForm({...form, body: e.target.value})} />
+          </div>
+          
+          <div className="flex justify-between items-center">
+            <p className="text-xs text-gray-500">
+              💡 Your signature will be automatically added below the message
+            </p>
+            <button 
+              onClick={send} 
+              disabled={sending || !form.to || !form.subject}
+              className="btn-primary px-6 py-2 rounded-lg text-white disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {sending ? 'Sending...' : '✉️ Send Email'}
+            </button>
           </div>
         </div>
       </Section>
@@ -511,7 +632,9 @@ function EmailsTab() {
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="font-medium">{m.subject}</div>
-                    <div className="text-xs text-gray-600">To: {m.to}</div>
+                    <div className="text-xs text-gray-600">
+                      From: {m.from || 'hello@hostpenny.co.uk'} → To: {m.to}
+                    </div>
                   </div>
                   <div className="text-xs text-gray-500">{new Date(m.sentAt).toLocaleString()}</div>
                 </div>
@@ -526,6 +649,7 @@ function EmailsTab() {
           </ul>
         )}
       </Section>
+      </div>
     </div>
   );
 }
