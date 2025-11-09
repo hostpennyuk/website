@@ -73,20 +73,23 @@ module.exports = async (req, res) => {
     // POST /api/inbound-emails - Create/Receive new email (webhook)
     if (method === 'POST' && !emailId) {
       console.log('📨 Received inbound email webhook from Resend');
-      const emailData = req.body;
+      const payload = req.body;
+      
+      // Handle Resend webhook format: { type: "email.received", data: {...} }
+      const emailData = payload.data || payload;
       
       const inboundEmail = new InboundEmail({
-        messageId: emailData.message_id || emailData.id,
+        messageId: emailData.message_id || emailData.email_id || emailData.id,
         from: {
           email: emailData.from?.email || emailData.from,
-          name: emailData.from?.name,
+          name: emailData.from?.name || null,
         },
-        to: Array.isArray(emailData.to) ? emailData.to : [{ email: emailData.to }],
+        to: Array.isArray(emailData.to) ? emailData.to.map(t => ({ email: typeof t === 'string' ? t : t.email })) : [{ email: emailData.to }],
         cc: emailData.cc || [],
         bcc: emailData.bcc || [],
         subject: emailData.subject || '(No Subject)',
-        text: emailData.text || emailData.plain_text,
-        html: emailData.html || emailData.html_body,
+        text: emailData.text || emailData.plain_text || '',
+        html: emailData.html || emailData.html_body || '',
         replyTo: emailData.reply_to ? {
           email: emailData.reply_to.email || emailData.reply_to,
           name: emailData.reply_to.name,
