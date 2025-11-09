@@ -1,8 +1,134 @@
-import connectDb from '../server/src/utils/db.js';
-import Enquiry from '../server/src/models/Enquiry.js';
-import Subscriber from '../server/src/models/Subscriber.js';
-import InboundEmail from '../server/src/models/InboundEmail.js';
-import { sendEnquiryNotification } from '../server/src/utils/email.js';
+import mongoose from 'mongoose';
+import { Resend } from 'resend';
+
+// MongoDB connection
+let cachedDb = null;
+async function connectDb() {
+  if (cachedDb) return cachedDb;
+  
+  const db = await mongoose.connect(process.env.MONGODB_URI, {
+    dbName: 'hostpenny'
+  });
+  
+  cachedDb = db;
+  return db;
+}
+
+// Enquiry Model
+const EnquirySchema = new mongoose.Schema({
+  fullName: { type: String, required: true },
+  email: { type: String, required: true },
+  company: String,
+  projectType: String,
+  idea: String,
+  budget: String,
+  timeline: String,
+  status: { type: String, default: 'new' },
+  notes: String,
+  tags: [String],
+  assignee: String,
+  dueDate: Date,
+  links: [String],
+  spam: { type: Boolean, default: false },
+}, { timestamps: true });
+
+const Enquiry = mongoose.models.Enquiry || mongoose.model('Enquiry', EnquirySchema);
+
+// Subscriber Model
+const SubscriberSchema = new mongoose.Schema({
+  email: { type: String, required: true, unique: true },
+  subscribedAt: { type: Date, default: Date.now },
+  source: String,
+});
+
+const Subscriber = mongoose.models.Subscriber || mongoose.model('Subscriber', SubscriberSchema);
+
+// InboundEmail Model
+const InboundEmailSchema = new mongoose.Schema({
+  messageId: { type: String, required: true, unique: true },
+  from: { email: String, name: String },
+  to: [{ email: String, name: String }],
+  subject: String,
+  text: String,
+  html: String,
+  headers: Object,
+  attachments: [Object],
+  receivedAt: { type: Date, default: Date.now },
+  read: { type: Boolean, default: false },
+  starred: { type: Boolean, default: false },
+  archived: { type: Boolean, default: false },
+  labels: [String],
+  forwardedToGmail: { type: Boolean, default: false },
+  forwardedAt: Date,
+});
+
+const InboundEmail = mongoose.models.InboundEmail || mongoose.model('InboundEmail', InboundEmailSchema);
+
+// Email notification function
+async function sendEnquiryNotification(enquiry) {
+  try {
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    
+    const emailHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #4c1d95 0%, #f43f5e 100%); color: white; padding: 20px; border-radius: 8px 8px 0 0; }
+          .content { background: #f9f9f9; padding: 20px; border: 1px solid #ddd; border-top: none; }
+          .field { margin-bottom: 15px; }
+          .label { font-weight: bold; color: #4c1d95; }
+          .value { margin-top: 5px; padding: 8px; background: white; border-radius: 4px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h2>🆕 New Enquiry Received</h2>
+          </div>
+          <div class="content">
+            <div class="field">
+              <div class="label">From:</div>
+              <div class="value">${enquiry.fullName}</div>
+            </div>
+            <div class="field">
+              <div class="label">Email:</div>
+              <div class="value">${enquiry.email}</div>
+            </div>
+            ${enquiry.company ? `<div class="field"><div class="label">Company:</div><div class="value">${enquiry.company}</div></div>` : ''}
+            <div class="field">
+              <div class="label">Project Type:</div>
+              <div class="value">${enquiry.projectType}</div>
+            </div>
+            <div class="field">
+              <div class="label">Message:</div>
+              <div class="value">${(enquiry.idea || '').replace(/\n/g, '<br>')}</div>
+            </div>
+            <div style="margin-top: 20px; padding: 15px; background: #4c1d95; border-radius: 8px; text-align: center;">
+              <a href="https://hostpenny.co.uk/admin" style="color: white; text-decoration: none; font-weight: bold;">
+                View in Admin Dashboard →
+              </a>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    await resend.emails.send({
+      from: process.env.EMAIL_FROM || 'notifications@hostpenny.co.uk',
+      to: process.env.ADMIN_EMAIL || 'hostpennyuk@gmail.com',
+      subject: `🔔 New Enquiry from ${enquiry.fullName}`,
+      html: emailHtml,
+    });
+    
+    console.log('✅ Email notification sent');
+  } catch (error) {
+    console.error('❌ Email failed:', error);
+  }
+}
 
 export default async function handler(req, res) {
   // CORS headers

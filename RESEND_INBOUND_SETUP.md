@@ -97,13 +97,11 @@ SMTP_PASS=xjbxrbpqbdktgbpl
 
 ### Step 3: Update Resend Webhook URL
 
-Once you have your backend URL:
-
-1. Go back to Resend Dashboard → Inbound
+1. Go to Resend Dashboard → Inbound: https://resend.com/inbound
 2. Click on your inbound email configuration
-3. Update Webhook URL:
+3. Set Webhook URL to:
    ```
-   https://your-backend-url.com/api/inbound-emails/webhook
+   https://hostpenny.co.uk/api/inbound-emails/webhook
    ```
 4. Save
 
