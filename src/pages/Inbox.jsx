@@ -8,8 +8,12 @@ const Inbox = () => {
   const [filter, setFilter] = useState('all'); // all, unread, starred, archived
   const [searchQuery, setSearchQuery] = useState('');
   const [showReplyForm, setShowReplyForm] = useState(false);
+  const [showComposeForm, setShowComposeForm] = useState(false);
   const [replySubject, setReplySubject] = useState('');
   const [replyBody, setReplyBody] = useState('');
+  const [composeTo, setComposeTo] = useState('');
+  const [composeSubject, setComposeSubject] = useState('');
+  const [composeBody, setComposeBody] = useState('');
   const [sending, setSending] = useState(false);
 
   useEffect(() => {
@@ -152,6 +156,43 @@ const Inbox = () => {
     }
   };
 
+  const sendNewEmail = async () => {
+    if (!composeBody.trim() || !composeTo.trim() || !composeSubject.trim()) {
+      alert('Please fill in recipient, subject, and message');
+      return;
+    }
+    
+    setSending(true);
+    try {
+      const { Resend } = await import('resend');
+      
+      await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: composeTo,
+          subject: composeSubject,
+          html: `
+            <div style="font-family: Arial, sans-serif;">
+              ${composeBody.replace(/\n/g, '<br>')}
+            </div>
+          `,
+        }),
+      });
+      
+      alert('Email sent successfully!');
+      setShowComposeForm(false);
+      setComposeTo('');
+      setComposeSubject('');
+      setComposeBody('');
+    } catch (error) {
+      console.error('Failed to send email:', error);
+      alert('Failed to send email');
+    } finally {
+      setSending(false);
+    }
+  };
+
   const formatDate = (date) => {
     const d = new Date(date);
     const now = new Date();
@@ -172,6 +213,17 @@ const Inbox = () => {
       <div className="lg:col-span-1 bg-white border rounded-xl overflow-hidden flex flex-col">
         {/* Search & Filters */}
         <div className="p-4 border-b">
+          <button
+            onClick={() => {
+              setShowComposeForm(true);
+              setSelectedEmail(null);
+              setShowReplyForm(false);
+            }}
+            className="w-full mb-3 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
+          >
+            ✉️ Compose New Email
+          </button>
+          
           <div className="relative mb-3">
             <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
@@ -260,7 +312,72 @@ const Inbox = () => {
 
       {/* Email Content */}
       <div className="lg:col-span-2 bg-white border rounded-xl overflow-hidden flex flex-col">
-        {selectedEmail ? (
+        {showComposeForm ? (
+          <>
+            <div className="p-4 border-b bg-purple-50">
+              <h2 className="text-xl font-bold">New Email</h2>
+              <p className="text-sm text-gray-600">From: hello@hostpenny.co.uk</p>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">To:</label>
+                  <input
+                    type="email"
+                    value={composeTo}
+                    onChange={(e) => setComposeTo(e.target.value)}
+                    placeholder="recipient@example.com"
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Subject:</label>
+                  <input
+                    type="text"
+                    value={composeSubject}
+                    onChange={(e) => setComposeSubject(e.target.value)}
+                    placeholder="Email subject"
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Message:</label>
+                  <textarea
+                    value={composeBody}
+                    onChange={(e) => setComposeBody(e.target.value)}
+                    placeholder="Write your message..."
+                    rows={12}
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-y"
+                  />
+                </div>
+                
+                <div className="flex gap-2">
+                  <button
+                    onClick={sendNewEmail}
+                    disabled={sending || !composeBody.trim() || !composeTo.trim() || !composeSubject.trim()}
+                    className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+                  >
+                    {sending ? 'Sending...' : 'Send Email'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowComposeForm(false);
+                      setComposeTo('');
+                      setComposeSubject('');
+                      setComposeBody('');
+                    }}
+                    className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </>
+        ) : selectedEmail ? (
           <>
             {/* Email Header */}
             <div className="p-4 border-b">
