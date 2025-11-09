@@ -6,8 +6,8 @@ async function connectDB() {
   if (cachedDb) return cachedDb;
   
   const conn = await mongoose.connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
+    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 45000,
   });
   
   cachedDb = conn;
@@ -50,7 +50,12 @@ InboundEmailSchema.index({ read: 1 });
 InboundEmailSchema.index({ archived: 1 });
 
 module.exports = async (req, res) => {
-  await connectDB();
+  try {
+    await connectDB();
+  } catch (dbError) {
+    console.error('MongoDB connection error:', dbError);
+    // Continue anyway - we'll try to forward to Gmail at least
+  }
   
   const InboundEmail = mongoose.models.InboundEmail || mongoose.model('InboundEmail', InboundEmailSchema);
 
@@ -67,6 +72,7 @@ module.exports = async (req, res) => {
 
     // POST /api/inbound-emails - Create/Receive new email (webhook)
     if (method === 'POST' && !emailId) {
+      console.log('📨 Received inbound email webhook from Resend');
       const emailData = req.body;
       
       const inboundEmail = new InboundEmail({
@@ -90,7 +96,13 @@ module.exports = async (req, res) => {
         references: emailData.references || [],
       });
 
-      await inboundEmail.save();
+      try {
+        await inboundEmail.save();
+        console.log('✅ Email saved to database:', inboundEmail._id);
+      } catch (saveError) {
+        console.error('❌ Failed to save email to database:', saveError.message);
+        // Continue to forward to Gmail even if DB save fails
+      }
 
       // Forward to Gmail
       if (process.env.SMTP_USER && process.env.SMTP_PASS) {
