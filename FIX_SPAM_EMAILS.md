@@ -270,21 +270,148 @@ If you're stuck:
 
 ---
 
+## 🎯 High Score But Still Spam? Here's Why
+
+### Your Score: 9.5/10 ✅
+
+If you're scoring 9.5/10 on mail-tester but emails still go to spam, the issue is **NOT authentication**. It's one of these:
+
+#### 1. **Gmail Promotions Tab** (Not Actually Spam)
+- Gmail auto-categorizes marketing emails to "Promotions"
+- This is NORMAL and NOT the spam folder
+- Check: Primary vs Promotions vs Spam
+
+**Solution**: Ask recipients to:
+1. Drag email from Promotions to Primary
+2. Mark as "Not spam" if in spam
+3. Add you to contacts
+
+#### 2. **Content Triggers**
+Even with perfect setup, these cause spam:
+- ❌ URL shorteners (bit.ly, tinyurl)
+- ❌ Too many links (>4 links)
+- ❌ ALL CAPS subject lines
+- ❌ Spam words: "FREE!!!", "Click NOW", "Limited time"
+- ❌ No physical address in footer
+- ❌ No unsubscribe link (newsletters)
+- ❌ Generic "no-reply@" addresses
+
+**Solution**: 
+```javascript
+// ✅ Good Subject
+"HostPenny: Your hosting is ready"
+
+// ❌ Bad Subject
+"FREE HOSTING!!! CLICK NOW Limited Time Offer!!!"
+```
+
+#### 3. **Low Engagement = Spam**
+If recipients don't open/click your emails:
+- Gmail learns your emails aren't wanted
+- Future emails go to spam automatically
+- Even with perfect DNS records
+
+**Solution**:
+- Send to engaged users only
+- Remove inactive subscribers (90+ days no open)
+- Personalize: Use recipient's name
+- Compelling subject lines
+- Send consistently (same day/time weekly)
+
+#### 4. **New Sender Address**
+Using `notifications@hostpenny.co.uk` for first time?
+- New addresses have NO reputation
+- Takes time to build trust
+- Start with small volumes
+
+**Solution**:
+- Stick to `hello@hostpenny.co.uk` (build its reputation)
+- Send 50-100 emails/day for 2 weeks
+- Gradually increase volume
+
+#### 5. **Missing Email Footer**
+**Required for newsletters:**
+```html
+<div style="margin-top:40px; padding:20px; background:#f5f5f5; font-size:12px; color:#666;">
+  <p><strong>HostPenny</strong></p>
+  <p>
+    [Your Business Address]<br>
+    United Kingdom<br>
+    support@hostpenny.co.uk
+  </p>
+  <p>
+    <a href="https://hostpenny.co.uk/unsubscribe">Unsubscribe</a> | 
+    <a href="https://hostpenny.co.uk/privacy">Privacy Policy</a>
+  </p>
+</div>
+```
+
+#### 6. **Sending Too Many Too Fast**
+Suddenly sending 100s of emails?
+- Looks like spam behavior
+- Triggers rate limits
+- Gets flagged
+
+**Solution**:
+- Send in batches of 50
+- Wait 5 minutes between batches
+- Consistent schedule (e.g., every Tuesday 10am)
+
+---
+
+## 🚀 Quick Fix Checklist
+
+### Immediate Actions:
+
+- [ ] Check if emails in **Promotions tab** (not spam - just filtered)
+- [ ] Add company name to "From": `HostPenny <hello@hostpenny.co.uk>`
+- [ ] Include physical address in footer
+- [ ] Add unsubscribe link (even if not newsletter)
+- [ ] Remove spam trigger words from subject
+- [ ] Limit to 2-3 links per email
+- [ ] Test subject line: Avoid ALL CAPS, !!! multiple punctuation
+- [ ] Ask engaged users to mark as "Not spam" / "Important"
+- [ ] Send smaller batches (50-100 at a time)
+- [ ] Use consistent "From" address (stick to hello@)
+
+---
+
+## 📊 Updated Email Sending Code
+
+I've updated your `/api/send-email.js` with:
+- ✅ Display name in "From" field
+- ✅ Unsubscribe headers
+- ✅ Better email headers for deliverability
+
+**Redeploy Vercel** to apply changes.
+
+---
+
+## 🧪 Test Again
+
+1. **Send test to mail-tester.com** (should still be 9.5/10+)
+2. **Send to your Gmail** 
+   - Check: Is it in **Primary**, **Promotions**, or **Spam**?
+   - Promotions = Normal for marketing emails
+   - Spam = Issue with content/reputation
+3. **Send to Outlook/Hotmail** (stricter than Gmail)
+4. **Ask a real customer** where emails land
+
+---
+
 ## 📝 Current Status for HostPenny
 
-Based on your setup, you need to:
+**Authentication**: ✅ Excellent (9.5/10 score)
+**Issue**: Likely content/engagement, not DNS
 
-1. ✅ You're already using Resend (good choice!)
-2. ⚠️ **ACTION NEEDED**: Add SPF, DKIM, DMARC records to your DNS
-3. ⚠️ **Verify domain** in Resend dashboard shows all green checkmarks
-4. ⚠️ **Test** with mail-tester.com before sending to customers
-
-**Estimated Time**: 20-30 minutes + 1 hour DNS propagation
-
-**Where are your DNS records?**
-Tell me your domain registrar (GoDaddy, Namecheap, Cloudflare, etc.) and I can give you exact steps.
+**Next Steps**:
+1. Commit updated send-email.js (done)
+2. Redeploy Vercel
+3. Check if emails in Promotions vs Spam
+4. Update email content/footer if needed
+5. Monitor engagement for 1-2 weeks
 
 ---
 
 **Last Updated**: November 9, 2025  
-**Priority**: HIGH - Affects email deliverability
+**Priority**: MEDIUM - Authentication is fine, focus on content/engagement

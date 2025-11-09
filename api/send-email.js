@@ -15,13 +15,23 @@ module.exports = async (req, res) => {
 
     // Use provided from address or default to hello@hostpenny.co.uk
     const fromEmail = from || process.env.EMAIL_FROM || 'hello@hostpenny.co.uk';
+    
+    // Add company name to improve deliverability
+    const fromWithName = fromEmail.includes('HostPenny') 
+      ? fromEmail 
+      : `HostPenny <${fromEmail}>`;
 
     const { data, error } = await resend.emails.send({
-      from: fromEmail,
+      from: fromWithName,
       to: to,
       subject: subject,
       html: html,
       reply_to: fromEmail,
+      headers: {
+        'X-Entity-Ref-ID': `hp-${Date.now()}`,
+        'List-Unsubscribe': '<https://hostpenny.co.uk/unsubscribe>',
+        'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+      },
     });
 
     if (error) {

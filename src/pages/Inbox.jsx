@@ -138,18 +138,36 @@ const Inbox = () => {
         body: JSON.stringify({
           subject: replySubject || `Re: ${selectedEmail.subject}`,
           html: `
-            <div style="font-family: Arial, sans-serif;">
-              ${replyBody.replace(/\n/g, '<br>')}
-              <br><br>
-              <div style="border-top: 1px solid #ddd; margin-top: 20px; padding-top: 20px; color: #666;">
-                <p><strong>From:</strong> ${selectedEmail.from.name || selectedEmail.from.email}</p>
-                <p><strong>Sent:</strong> ${new Date(selectedEmail.receivedAt).toLocaleString()}</p>
-                <p><strong>Subject:</strong> ${selectedEmail.subject}</p>
-                <div style="margin-top: 10px;">
-                  ${selectedEmail.html || selectedEmail.text}
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            </head>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+              <div style="white-space: pre-wrap;">
+                ${replyBody.replace(/\n/g, '<br>')}
+              </div>
+              <div style="border-top: 2px solid #e5e7eb; margin: 30px 0 20px 0; padding-top: 20px; color: #666; font-size: 14px;">
+                <p style="margin: 0 0 10px 0; color: #999;">--- Original Message ---</p>
+                <p style="margin: 5px 0;"><strong>From:</strong> ${selectedEmail.from.name || selectedEmail.from.email}</p>
+                <p style="margin: 5px 0;"><strong>Sent:</strong> ${new Date(selectedEmail.receivedAt).toLocaleString()}</p>
+                <p style="margin: 5px 0;"><strong>Subject:</strong> ${selectedEmail.subject}</p>
+                <div style="margin-top: 15px; padding: 15px; background: #f9f9f9; border-left: 3px solid #667eea;">
+                  ${selectedEmail.html || selectedEmail.text.replace(/\n/g, '<br>')}
                 </div>
               </div>
-            </div>
+              <div style="margin-top: 30px; padding: 20px; background: #f5f5f5; border-radius: 6px; font-size: 12px; color: #666;">
+                <p style="margin: 0 0 5px 0;"><strong>HostPenny</strong></p>
+                <p style="margin: 0 0 5px 0;">Professional Web Development & Hosting</p>
+                <p style="margin: 0 0 5px 0;">United Kingdom</p>
+                <p style="margin: 0;">
+                  <a href="https://hostpenny.co.uk" style="color: #667eea; text-decoration: none;">Website</a> | 
+                  <a href="mailto:support@hostpenny.co.uk" style="color: #667eea; text-decoration: none;">Support</a>
+                </p>
+              </div>
+            </body>
+            </html>
           `,
         }),
       });
@@ -184,9 +202,27 @@ const Inbox = () => {
           to: composeTo,
           subject: composeSubject,
           html: `
-            <div style="font-family: Arial, sans-serif;">
-              ${composeBody.replace(/\n/g, '<br>')}
-            </div>
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            </head>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+              <div style="white-space: pre-wrap;">
+                ${composeBody.replace(/\n/g, '<br>')}
+              </div>
+              <div style="margin-top: 40px; padding: 20px; background: #f5f5f5; border-radius: 6px; font-size: 12px; color: #666;">
+                <p style="margin: 0 0 5px 0;"><strong>HostPenny</strong></p>
+                <p style="margin: 0 0 5px 0;">Professional Web Development & Hosting</p>
+                <p style="margin: 0 0 5px 0;">United Kingdom</p>
+                <p style="margin: 0;">
+                  <a href="https://hostpenny.co.uk" style="color: #667eea; text-decoration: none;">Website</a> | 
+                  <a href="mailto:support@hostpenny.co.uk" style="color: #667eea; text-decoration: none;">Support</a>
+                </p>
+              </div>
+            </body>
+            </html>
           `,
         }),
       });

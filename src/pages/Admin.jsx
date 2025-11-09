@@ -489,7 +489,17 @@ function EmailsTab() {
                   </td>
                 </tr>
                 <tr>
-                  <td align="center" style="padding:16px; color:#888; font-size:12px; background:#fafafa;">© ${new Date().getFullYear()} HostPenny</td>
+                  <td align="center" style="padding:20px 32px; color:#666; font-size:12px; background:#fafafa; line-height:1.8;">
+                    <p style="margin:0 0 8px 0; font-weight:600;">HostPenny</p>
+                    <p style="margin:0 0 8px 0;">Professional Web Development & Hosting</p>
+                    <p style="margin:0 0 12px 0;">United Kingdom</p>
+                    <p style="margin:0 0 8px 0;">
+                      <a href="https://hostpenny.co.uk" style="color:#667eea; text-decoration:none;">Visit Website</a> | 
+                      <a href="https://hostpenny.co.uk/unsubscribe" style="color:#667eea; text-decoration:none;">Unsubscribe</a> | 
+                      <a href="https://hostpenny.co.uk/privacy" style="color:#667eea; text-decoration:none;">Privacy Policy</a>
+                    </p>
+                    <p style="margin:0; color:#999;">© ${new Date().getFullYear()} HostPenny. All rights reserved.</p>
+                  </td>
                 </tr>
               </table>
             </td>
