@@ -148,9 +148,17 @@ const Footer = () => {
         {/* Bottom Footer */}
         <div className="border-t border-white/10 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <p className="text-gray-300 text-sm">
-              © {currentYear} All rights reserved by HostPenny
-            </p>
+            <div className="flex items-center space-x-4">
+              <p className="text-gray-300 text-sm">
+                © {currentYear} All rights reserved by HostPenny
+              </p>
+              <Link 
+                to="/admin" 
+                className="text-gray-400 hover:text-primary text-sm transition-colors"
+              >
+                Admin
+              </Link>
+            </div>
             <div className="flex items-center space-x-4">
               <span className="text-gray-400 text-sm">Follow us:</span>
               {socialLinks.map((social) => (
