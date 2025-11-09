@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 // MongoDB connection
 let cachedDb = null;
@@ -25,7 +25,7 @@ const EnquirySchema = new mongoose.Schema({
 
 const Enquiry = mongoose.models.Enquiry || mongoose.model('Enquiry', EnquirySchema);
 
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
   // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
@@ -49,7 +49,7 @@ export default async function handler(req, res) {
       
       // Send email notification
       if (process.env.RESEND_API_KEY) {
-        const { Resend } = await import('resend');
+        const { Resend } = require('resend');
         const resend = new Resend(process.env.RESEND_API_KEY);
         
         await resend.emails.send({
@@ -75,4 +75,4 @@ export default async function handler(req, res) {
     console.error('API Error:', error);
     return res.status(500).json({ error: error.message });
   }
-}
+};

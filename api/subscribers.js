@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 // MongoDB connection
 let cachedDb = null;
@@ -18,7 +18,7 @@ const SubscriberSchema = new mongoose.Schema({
 
 const Subscriber = mongoose.models.Subscriber || mongoose.model('Subscriber', SubscriberSchema);
 
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
   // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
