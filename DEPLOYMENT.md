@@ -44,9 +44,9 @@ PORT=4000
 # Email - Admin
 ADMIN_EMAIL=hostpennyuk@gmail.com
 
-# Email - Resend (Primary)
+# Email - Resend (Primary) - Domain Verified ✅
 RESEND_API_KEY=re_3pBzQuVX_8kASeah1iXRgx2iLVQ1HPvxr
-EMAIL_FROM=onboarding@resend.dev
+EMAIL_FROM=notifications@hostpenny.co.uk
 
 # Email - Gmail (Backup)
 SMTP_HOST=smtp.gmail.com
