@@ -55,9 +55,9 @@ Start Command: npm start
 
 Click "Add Environment Variable" for each:
 ```
-MONGODB_URI=mongodb+srv://hostpennyuk_db_user:VdjO48YuBamGi6va@cluster0.gira6ng.mongodb.net/hostpenny?retryWrites=true&w=majority&appName=Cluster0
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/hostpenny?retryWrites=true&w=majority&appName=Cluster0
 
-RESEND_API_KEY=re_3pBzQuVX_8kASeah1iXRgx2iLVQ1HPvxr
+RESEND_API_KEY=re_your_actual_api_key_here
 
 EMAIL_FROM=notifications@hostpenny.co.uk
 
@@ -69,7 +69,7 @@ SMTP_PORT=587
 
 SMTP_USER=hostpennyuk@gmail.com
 
-SMTP_PASS=xjbxrbpqbdktgbpl
+SMTP_PASS=your_gmail_app_password_here
 
 PORT=4000
 ```

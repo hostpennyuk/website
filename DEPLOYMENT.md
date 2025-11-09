@@ -36,7 +36,7 @@ This guide walks you through deploying both the frontend (to Vercel) and backend
 
 ```bash
 # MongoDB
-MONGODB_URI=mongodb+srv://hostpennyuk_db_user:VdjO48YuBamGi6va@cluster0.gira6ng.mongodb.net/hostpenny
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/hostpenny
 
 # Port (Railway auto-assigns)
 PORT=4000
@@ -52,7 +52,8 @@ EMAIL_FROM=notifications@hostpenny.co.uk
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=hostpennyuk@gmail.com
-SMTP_PASS=xjbxrbpqbdktgbpl
+```bash
+SMTP_PASS=your_gmail_app_password_here
 
 # Node Environment
 NODE_ENV=production

@@ -80,14 +80,14 @@ Make sure these are set in your Vercel project settings:
 4. Add these variables:
 
 ```
-MONGODB_URI=mongodb+srv://hostpennyuk_db_user:VdjO48YuBamGi6va@cluster0.gira6ng.mongodb.net/hostpenny
-RESEND_API_KEY=re_3pBzQuVX_8kASeah1iXRgx2iLVQ1HPvxr
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/hostpenny
+RESEND_API_KEY=re_your_actual_api_key_here
 EMAIL_FROM=notifications@hostpenny.co.uk
 ADMIN_EMAIL=hostpennyuk@gmail.com
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=hostpennyuk@gmail.com
-SMTP_PASS=xjbxrbpqbdktgbpl
+SMTP_PASS=your_gmail_app_password_here
 ```
 
 5. Click "Save"

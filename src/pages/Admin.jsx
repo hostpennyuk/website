@@ -35,8 +35,9 @@ import {
 } from '../store/content';
 import Inbox from './Inbox';
 
-const ADMIN_EMAIL = 'profmendel@gmail.com';
-const ADMIN_PASSWORD = 'Gig@50chin';
+// Admin credentials - configure via environment variables in production
+const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || 'profmendel@gmail.com';
+const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'Gig@50chin';
 
 const Section = ({ title, children, actions }) => (
   <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">

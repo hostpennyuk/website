@@ -62,7 +62,7 @@ Expected: Email arrives at hostpennyuk@gmail.com within seconds
 
 - URL: `http://localhost:5174/admin`
 - Email: `profmendel@gmail.com`
-- Password: `Gig@50chin`
+- Password: `[Your admin password]`
 
 ## 📊 Key Features
 

@@ -9,7 +9,7 @@ Go to: https://vercel.com/dashboard → Your Project → Settings → Environmen
 ## 🔐 Admin Login Details
 
 **Email**: profmendel@gmail.com
-**Password**: Gig@50chin
+**Password**: [Your admin password]
 
 **Admin URL**: https://hostpenny.co.uk/admin
 

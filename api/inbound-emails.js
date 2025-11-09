@@ -238,12 +238,18 @@ ${emailData.text || emailData.plain_text || 'No text content'}
 
     // DELETE /api/inbound-emails/:id
     if (method === 'DELETE' && emailId) {
+      if (!mongoose.Types.ObjectId.isValid(emailId)) {
+        return res.status(400).json({ error: 'Invalid email ID' });
+      }
       await InboundEmail.findByIdAndDelete(emailId);
       return res.json({ success: true });
     }
 
     // POST /api/inbound-emails/:id/reply - Send reply
     if (method === 'POST' && action === 'reply') {
+      if (!mongoose.Types.ObjectId.isValid(emailId)) {
+        return res.status(400).json({ error: 'Invalid email ID' });
+      }
       const email = await InboundEmail.findById(emailId);
       if (!email) return res.status(404).json({ error: 'Email not found' });
 
