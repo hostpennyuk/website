@@ -12,9 +12,19 @@ const Inbox = () => {
   const [replySubject, setReplySubject] = useState('');
   const [replyBody, setReplyBody] = useState('');
   const [composeTo, setComposeTo] = useState('');
+  const [composeFrom, setComposeFrom] = useState('hello@hostpenny.co.uk');
   const [composeSubject, setComposeSubject] = useState('');
   const [composeBody, setComposeBody] = useState('');
   const [sending, setSending] = useState(false);
+
+  const availableEmails = [
+    'hello@hostpenny.co.uk',
+    'support@hostpenny.co.uk',
+    'admin@hostpenny.co.uk',
+    'info@hostpenny.co.uk',
+    'sales@hostpenny.co.uk',
+    'contact@hostpenny.co.uk',
+  ];
 
   useEffect(() => {
     fetchEmails();
@@ -170,6 +180,7 @@ const Inbox = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          from: composeFrom,
           to: composeTo,
           subject: composeSubject,
           html: `
@@ -316,11 +327,23 @@ const Inbox = () => {
           <>
             <div className="p-4 border-b bg-purple-50">
               <h2 className="text-xl font-bold">New Email</h2>
-              <p className="text-sm text-gray-600">From: hello@hostpenny.co.uk</p>
             </div>
             
             <div className="flex-1 overflow-y-auto p-6">
               <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">From:</label>
+                  <select
+                    value={composeFrom}
+                    onChange={(e) => setComposeFrom(e.target.value)}
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  >
+                    {availableEmails.map(email => (
+                      <option key={email} value={email}>{email}</option>
+                    ))}
+                  </select>
+                </div>
+                
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">To:</label>
                   <input
@@ -351,12 +374,13 @@ const Inbox = () => {
                     placeholder="Write your message..."
                     rows={12}
                     className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-y"
-                  />
-                </div>
-                
-                <div className="flex gap-2">
-                  <button
-                    onClick={sendNewEmail}
+                    onClick={() => {
+                      setShowComposeForm(false);
+                      setComposeTo('');
+                      setComposeFrom('hello@hostpenny.co.uk');
+                      setComposeSubject('');
+                      setComposeBody('');
+                    }}Click={sendNewEmail}
                     disabled={sending || !composeBody.trim() || !composeTo.trim() || !composeSubject.trim()}
                     className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
                   >

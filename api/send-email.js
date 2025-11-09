@@ -4,7 +4,7 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const { to, subject, html } = req.body;
+    const { from, to, subject, html } = req.body;
 
     if (!to || !subject || !html) {
       return res.status(400).json({ error: 'Missing required fields: to, subject, html' });
@@ -13,12 +13,15 @@ module.exports = async (req, res) => {
     const { Resend } = require('resend');
     const resend = new Resend(process.env.RESEND_API_KEY);
 
+    // Use provided from address or default to hello@hostpenny.co.uk
+    const fromEmail = from || process.env.EMAIL_FROM || 'hello@hostpenny.co.uk';
+
     const { data, error } = await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'hello@hostpenny.co.uk',
+      from: fromEmail,
       to: to,
       subject: subject,
       html: html,
-      reply_to: process.env.EMAIL_FROM || 'hello@hostpenny.co.uk',
+      reply_to: fromEmail,
     });
 
     if (error) {
