@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>API Test - HostPenny</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
+    button { padding: 10px 20px; margin: 10px 5px; cursor: pointer; background: #8b5cf6; color: white; border: none; border-radius: 5px; }
+    pre { background: #f5f5f5; padding: 15px; border-radius: 5px; overflow-x: auto; }
+    .success { color: green; }
+    .error { color: red; }
+  </style>
+</head>
+<body>
+  <h1>HostPenny API Test</h1>
+  
+  <h2>Test API Endpoints</h2>
+  
+  <button onclick="testHealth()">Test /api/health</button>
+  <button onclick="testEnquiries()">Test /api/enquiries (GET)</button>
+  <button onclick="testSubscribers()">Test /api/subscribers (GET)</button>
+  
+  <h3>Result:</h3>
+  <div id="result"></div>
+  
+  <script>
+    const resultDiv = document.getElementById('result');
+    
+    async function testHealth() {
+      resultDiv.innerHTML = 'Testing...';
+      try {
+        const res = await fetch('/api/health');
+        const data = await res.json();
+        resultDiv.innerHTML = `<p class="success">✅ Success!</p><pre>${JSON.stringify(data, null, 2)}</pre>`;
+      } catch (err) {
+        resultDiv.innerHTML = `<p class="error">❌ Error: ${err.message}</p>`;
+      }
+    }
+    
+    async function testEnquiries() {
+      resultDiv.innerHTML = 'Testing...';
+      try {
+        const res = await fetch('/api/enquiries');
+        const data = await res.json();
+        resultDiv.innerHTML = `<p class="success">✅ Success! Found ${data.length} enquiries</p><pre>${JSON.stringify(data, null, 2)}</pre>`;
+      } catch (err) {
+        resultDiv.innerHTML = `<p class="error">❌ Error: ${err.message}</p>`;
+      }
+    }
+    
+    async function testSubscribers() {
+      resultDiv.innerHTML = 'Testing...';
+      try {
+        const res = await fetch('/api/subscribers');
+        const data = await res.json();
+        resultDiv.innerHTML = `<p class="success">✅ Success! Found ${data.length} subscribers</p><pre>${JSON.stringify(data, null, 2)}</pre>`;
+      } catch (err) {
+        resultDiv.innerHTML = `<p class="error">❌ Error: ${err.message}</p>`;
+      }
+    }
+  </script>
+</body>
+</html>
