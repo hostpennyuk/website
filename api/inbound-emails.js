@@ -56,10 +56,14 @@ module.exports = async (req, res) => {
 
   try {
     // Handle different HTTP methods and routes
-    const { method } = req;
-    const pathParts = req.url.split('?')[0].split('/').filter(Boolean);
-    const emailId = pathParts[pathParts.length - 1];
-    const action = pathParts[pathParts.length - 2];
+    const { method, query } = req;
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    const pathParts = url.pathname.split('/').filter(Boolean);
+    
+    // Remove 'api' and 'inbound-emails' from path to get actual route parts
+    const routeParts = pathParts.slice(2); // Skip 'api' and 'inbound-emails'
+    const emailId = routeParts[0] || null;
+    const action = routeParts[1] || null;
 
     // POST /api/inbound-emails - Create/Receive new email (webhook)
     if (method === 'POST' && !emailId) {
@@ -156,7 +160,7 @@ ${emailData.text || emailData.plain_text || 'No text content'}
 
     // GET /api/inbound-emails - List all emails
     if (method === 'GET' && !emailId) {
-      const { read, archived, starred, limit = 50, skip = 0, search } = req.query;
+      const { read, archived, starred, limit = 50, skip = 0, search } = query;
       
       const filter = {};
       if (read !== undefined) filter.read = read === 'true';
@@ -184,7 +188,10 @@ ${emailData.text || emailData.plain_text || 'No text content'}
     }
 
     // GET /api/inbound-emails/:id - Get single email
-    if (method === 'GET' && emailId && action !== 'reply') {
+    if (method === 'GET' && emailId && !action) {
+      if (!mongoose.Types.ObjectId.isValid(emailId)) {
+        return res.status(400).json({ error: 'Invalid email ID' });
+      }
       const email = await InboundEmail.findById(emailId);
       if (!email) return res.status(404).json({ error: 'Email not found' });
       return res.json(email);
@@ -192,6 +199,9 @@ ${emailData.text || emailData.plain_text || 'No text content'}
 
     // PATCH /api/inbound-emails/:id/read
     if (method === 'PATCH' && action === 'read') {
+      if (!mongoose.Types.ObjectId.isValid(emailId)) {
+        return res.status(400).json({ error: 'Invalid email ID' });
+      }
       const email = await InboundEmail.findByIdAndUpdate(
         emailId,
         { read: req.body.read },
@@ -202,6 +212,9 @@ ${emailData.text || emailData.plain_text || 'No text content'}
 
     // PATCH /api/inbound-emails/:id/star
     if (method === 'PATCH' && action === 'star') {
+      if (!mongoose.Types.ObjectId.isValid(emailId)) {
+        return res.status(400).json({ error: 'Invalid email ID' });
+      }
       const email = await InboundEmail.findByIdAndUpdate(
         emailId,
         { starred: req.body.starred },
@@ -212,6 +225,9 @@ ${emailData.text || emailData.plain_text || 'No text content'}
 
     // PATCH /api/inbound-emails/:id/archive
     if (method === 'PATCH' && action === 'archive') {
+      if (!mongoose.Types.ObjectId.isValid(emailId)) {
+        return res.status(400).json({ error: 'Invalid email ID' });
+      }
       const email = await InboundEmail.findByIdAndUpdate(
         emailId,
         { archived: req.body.archived },
