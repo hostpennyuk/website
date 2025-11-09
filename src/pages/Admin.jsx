@@ -478,7 +478,7 @@ function EmailsTab() {
               <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="max-width:600px; width:100%; background:#ffffff; border-radius:16px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,0.06);">
                 <tr>
                   <td align="center" style="background:${accent}; padding:20px;">
-                    <img src="${logoUrl || '/logo.gif'}" alt="Logo" style="height:40px; display:block;"/>
+                    <img src="${logoUrl || 'https://hostpenny.co.uk/logo.gif'}" alt="HostPenny" style="height:40px; display:block;"/>
                   </td>
                 </tr>
                 <tr>
