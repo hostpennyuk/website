@@ -99,11 +99,14 @@ module.exports = async (req, res) => {
         references: emailData.references || [],
       });
 
+      let savedId = null;
       try {
         await inboundEmail.save();
-        console.log('✅ Email saved to database:', inboundEmail._id);
+        savedId = inboundEmail._id;
+        console.log('✅ Email saved to database:', savedId);
       } catch (saveError) {
         console.error('❌ Failed to save email to database:', saveError.message);
+        console.error('Error details:', saveError);
         // Continue to forward to Gmail even if DB save fails
       }
 
@@ -160,17 +163,20 @@ ${emailData.text || emailData.plain_text || 'No text content'}
             `,
           });
 
-          inboundEmail.forwardedToGmail = true;
-          inboundEmail.forwardedAt = new Date();
-          await inboundEmail.save();
+          if (savedId) {
+            inboundEmail.forwardedToGmail = true;
+            inboundEmail.forwardedAt = new Date();
+            await inboundEmail.save();
+          }
           
           console.log('✅ Email forwarded to hostpennyuk@gmail.com');
         } catch (error) {
           console.error('❌ Failed to forward to Gmail:', error.message);
+          console.error('Gmail forward error details:', error);
         }
       }
 
-      return res.status(200).json({ success: true, id: inboundEmail._id });
+      return res.status(200).json({ success: true, message: 'Email received', id: savedId, forwarded: !!process.env.SMTP_USER });
     }
 
     // GET /api/inbound-emails - List all emails
