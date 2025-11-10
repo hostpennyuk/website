@@ -84,9 +84,6 @@ module.exports = async (req, res) => {
       console.log('📨 Received inbound email webhook from Resend');
       const payload = req.body;
       
-      // Respond to Resend immediately to avoid timeout
-      res.status(200).json({ success: true, message: 'Email received' });
-      
       // Handle Resend webhook format: { type: "email.received", data: {...} }
       const emailData = payload.data || payload;
       
@@ -188,8 +185,8 @@ ${emailData.text || emailData.plain_text || 'No text content'}
         }
       }
 
-      // Response already sent above
-      return;
+      // Send response after everything is processed
+      return res.status(200).json({ success: true, message: 'Email received', id: savedId });
     }
 
     // GET /api/inbound-emails - List all emails
