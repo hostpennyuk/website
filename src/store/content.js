@@ -50,7 +50,7 @@ const defaultSettings = {
   primaryCtaLabel: 'Build my sales machine',
   stickyCtaLabel: "Let's Build Something Amazing",
   video: { youtubeId: 'Z3VopNZrkrs', startSeconds: 6 },
-  logoUrl: '/logo.gif',
+  logoUrl: 'https://hostpenny.co.uk/logo.gif',
   apiBaseUrl: '/api',
   // Optional endpoints to forward submissions to third-party services (Formspree, Getform, Web3Forms, custom API)
   formEndpoint: '',
