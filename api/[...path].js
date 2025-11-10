@@ -269,6 +269,84 @@ export default async function handler(req, res) {
       }
     }
 
+    // Webhook routes for PATCH/DELETE operations
+    if (route.startsWith('webhook/')) {
+      const parts = route.split('/');
+      const emailId = parts[1];
+      const action = parts[2];
+
+      // PATCH /api/webhook/:id/read
+      if (req.method === 'PATCH' && action === 'read') {
+        const email = await InboundEmail.findByIdAndUpdate(
+          emailId,
+          { read: req.body.read },
+          { new: true }
+        );
+        return res.status(200).json(email);
+      }
+
+      // PATCH /api/webhook/:id/star
+      if (req.method === 'PATCH' && action === 'star') {
+        const email = await InboundEmail.findByIdAndUpdate(
+          emailId,
+          { starred: req.body.starred },
+          { new: true }
+        );
+        return res.status(200).json(email);
+      }
+
+      // PATCH /api/webhook/:id/archive
+      if (req.method === 'PATCH' && action === 'archive') {
+        const email = await InboundEmail.findByIdAndUpdate(
+          emailId,
+          { archived: req.body.archived },
+          { new: true }
+        );
+        return res.status(200).json(email);
+      }
+
+      // DELETE /api/webhook/:id
+      if (req.method === 'DELETE' && !action) {
+        await InboundEmail.findByIdAndDelete(emailId);
+        return res.status(200).json({ success: true });
+      }
+
+      // GET /api/webhook/:id - Get single email
+      if (req.method === 'GET' && !action) {
+        const email = await InboundEmail.findById(emailId);
+        if (!email) return res.status(404).json({ error: 'Email not found' });
+        return res.status(200).json(email);
+      }
+    }
+
+    // GET /api/webhook - List emails with filters
+    if (route === 'webhook') {
+      if (req.method === 'GET') {
+        const { read, archived, starred, limit = 50, skip = 0, search } = req.query;
+        
+        const filter = {};
+        if (read !== undefined) filter.read = read === 'true';
+        if (archived !== undefined) filter.archived = archived === 'true';
+        if (starred !== undefined) filter.starred = starred === 'true';
+        
+        if (search) {
+          filter.$or = [
+            { 'from.email': { $regex: search, $options: 'i' } },
+            { 'from.name': { $regex: search, $options: 'i' } },
+            { subject: { $regex: search, $options: 'i' } },
+            { text: { $regex: search, $options: 'i' } },
+          ];
+        }
+
+        const emails = await InboundEmail.find(filter)
+          .sort({ receivedAt: -1 })
+          .limit(parseInt(limit))
+          .skip(parseInt(skip));
+        
+        return res.status(200).json({ emails });
+      }
+    }
+
     // Route not found
     return res.status(404).json({ error: 'Not found' });
     
