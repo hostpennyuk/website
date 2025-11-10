@@ -65,12 +65,14 @@ module.exports = async (req, res) => {
     const url = new URL(req.url, `http://${req.headers.host}`);
     const pathParts = url.pathname.split('/').filter(Boolean);
     
-    // Remove 'api' and 'inbound-emails' from path to get actual route parts
-    const routeParts = pathParts.slice(2); // Skip 'api' and 'inbound-emails'
+    // Remove 'api' and 'webhook' from path to get actual route parts
+    const routeParts = pathParts.slice(2); // Skip 'api' and 'webhook'
     const emailId = routeParts[0] || null;
     const action = routeParts[1] || null;
+    
+    console.log('🔍 Route debug:', { method, pathname: url.pathname, pathParts, routeParts, emailId, action });
 
-    // POST /api/inbound-emails - Create/Receive new email (webhook)
+    // POST /api/webhook - Create/Receive new email (webhook)
     if (method === 'POST' && !emailId) {
       console.log('📨 Received inbound email webhook from Resend');
       const payload = req.body;
@@ -180,7 +182,7 @@ ${emailData.text || emailData.plain_text || 'No text content'}
       return res.status(200).json({ success: true, message: 'Email received', id: savedId });
     }
 
-    // GET /api/inbound-emails - List all emails
+    // GET /api/webhook - List all emails
     if (method === 'GET' && !emailId) {
       const { read, archived, starred, limit = 50, skip = 0, search } = query;
       
@@ -209,7 +211,7 @@ ${emailData.text || emailData.plain_text || 'No text content'}
       return res.json({ emails, total, unreadCount, hasMore: total > (parseInt(skip) + emails.length) });
     }
 
-    // GET /api/inbound-emails/:id - Get single email
+    // GET /api/webhook/:id - Get single email
     if (method === 'GET' && emailId && !action) {
       if (!mongoose.Types.ObjectId.isValid(emailId)) {
         return res.status(400).json({ error: 'Invalid email ID' });
@@ -219,7 +221,7 @@ ${emailData.text || emailData.plain_text || 'No text content'}
       return res.json(email);
     }
 
-    // PATCH /api/inbound-emails/:id/read
+    // PATCH /api/webhook/:id/read
     if (method === 'PATCH' && action === 'read') {
       if (!mongoose.Types.ObjectId.isValid(emailId)) {
         return res.status(400).json({ error: 'Invalid email ID' });
@@ -232,7 +234,7 @@ ${emailData.text || emailData.plain_text || 'No text content'}
       return res.json(email);
     }
 
-    // PATCH /api/inbound-emails/:id/star
+    // PATCH /api/webhook/:id/star
     if (method === 'PATCH' && action === 'star') {
       if (!mongoose.Types.ObjectId.isValid(emailId)) {
         return res.status(400).json({ error: 'Invalid email ID' });
@@ -245,7 +247,7 @@ ${emailData.text || emailData.plain_text || 'No text content'}
       return res.json(email);
     }
 
-    // PATCH /api/inbound-emails/:id/archive
+    // PATCH /api/webhook/:id/archive
     if (method === 'PATCH' && action === 'archive') {
       if (!mongoose.Types.ObjectId.isValid(emailId)) {
         return res.status(400).json({ error: 'Invalid email ID' });
@@ -258,7 +260,7 @@ ${emailData.text || emailData.plain_text || 'No text content'}
       return res.json(email);
     }
 
-    // DELETE /api/inbound-emails/:id
+    // DELETE /api/webhook/:id
     if (method === 'DELETE' && emailId) {
       if (!mongoose.Types.ObjectId.isValid(emailId)) {
         return res.status(400).json({ error: 'Invalid email ID' });
@@ -267,7 +269,7 @@ ${emailData.text || emailData.plain_text || 'No text content'}
       return res.json({ success: true });
     }
 
-    // POST /api/inbound-emails/:id/reply - Send reply
+    // POST /api/webhook/:id/reply - Send reply
     if (method === 'POST' && action === 'reply') {
       if (!mongoose.Types.ObjectId.isValid(emailId)) {
         return res.status(400).json({ error: 'Invalid email ID' });
