@@ -40,7 +40,7 @@ const Inbox = () => {
       if (filter === 'archived') params.append('archived', 'true');
       if (searchQuery) params.append('search', searchQuery);
 
-      const response = await fetch(`/api/inbound-emails?${params}`);
+      const response = await fetch(`/api/webhook?${params}`);
       const data = await response.json();
       setEmails(data.emails || []);
     } catch (error) {
@@ -57,7 +57,7 @@ const Inbox = () => {
     // Mark as read
     if (!email.read) {
       try {
-        await fetch(`/api/inbound-emails/${email._id}/read`, {
+        await fetch(`/api/webhook/${email._id}/read`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ read: true }),
@@ -75,7 +75,7 @@ const Inbox = () => {
   const toggleStar = async (email, e) => {
     e.stopPropagation();
     try {
-      await fetch(`/api/inbound-emails/${email._id}/star`, {
+      await fetch(`/api/webhook/${email._id}/star`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ starred: !email.starred }),
@@ -95,7 +95,7 @@ const Inbox = () => {
 
   const archiveEmail = async (email) => {
     try {
-      await fetch(`/api/inbound-emails/${email._id}/archive`, {
+      await fetch(`/api/webhook/${email._id}/archive`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ archived: true }),
@@ -114,7 +114,7 @@ const Inbox = () => {
     if (!confirm('Delete this email permanently?')) return;
     
     try {
-      await fetch(`/api/inbound-emails/${email._id}`, {
+      await fetch(`/api/webhook/${email._id}`, {
         method: 'DELETE',
       });
       
