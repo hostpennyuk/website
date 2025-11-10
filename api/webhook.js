@@ -50,6 +50,7 @@ InboundEmailSchema.index({ read: 1 });
 InboundEmailSchema.index({ archived: 1 });
 
 module.exports = async (req, res) => {
+  // Vercel serverless function for handling inbound emails
   try {
     await connectDB();
   } catch (dbError) {
