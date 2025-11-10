@@ -50,11 +50,20 @@ InboundEmailSchema.index({ read: 1 });
 InboundEmailSchema.index({ archived: 1 });
 
 module.exports = async (req, res) => {
+  let dbConnected = false;
   try {
     await connectDB();
+    dbConnected = true;
   } catch (dbError) {
     console.error('MongoDB connection error:', dbError);
-    // Continue anyway - we'll try to forward to Gmail at least
+    // For POST (webhook), continue to forward to Gmail
+    // For other methods, return error
+    if (req.method !== 'POST') {
+      return res.status(503).json({ 
+        error: 'Database connection failed', 
+        details: dbError.message 
+      });
+    }
   }
   
   const InboundEmail = mongoose.models.InboundEmail || mongoose.model('InboundEmail', InboundEmailSchema);
