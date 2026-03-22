@@ -66,16 +66,12 @@ const Navbar = () => {
                 key={link.path}
                 to={link.path}
                 className={`text-base font-semibold transition-all duration-300 relative group ${
-                  showPurpleBackground 
-                    ? (location.pathname === link.path ? 'text-white' : 'text-white/90 hover:text-white')
-                    : (location.pathname === link.path ? 'text-gray-900' : 'text-gray-900 hover:text-primary')
+                  location.pathname === link.path ? 'text-white' : 'text-white/80 hover:text-white'
                 }`}
               >
                 {link.label}
                 <span
-                  className={`absolute -bottom-1 left-0 h-0.5 transition-all duration-300 ${
-                    showPurpleBackground ? 'bg-white' : 'bg-primary'
-                  } ${
+                  className={`absolute -bottom-1 left-0 h-0.5 transition-all duration-300 bg-white ${
                     location.pathname === link.path ? 'w-full' : 'w-0 group-hover:w-full'
                   }`}
                 />
@@ -121,9 +117,7 @@ const Navbar = () => {
                     to={link.path}
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={`text-lg font-semibold transition-colors ${
-                      showPurpleBackground
-                        ? (location.pathname === link.path ? 'text-white' : 'text-white/90 hover:text-white')
-                        : (location.pathname === link.path ? 'text-gray-900' : 'text-gray-700 hover:text-primary')
+                      location.pathname === link.path ? 'text-white' : 'text-white/80 hover:text-white'
                     }`}
                   >
                     {link.label}
