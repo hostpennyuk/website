@@ -36,20 +36,60 @@ import {
   deleteEnquiryAsync,
 } from '../store/content';
 import Inbox from './Inbox';
+import { 
+  HiOutlineHome, HiOutlineMail, HiOutlineInbox, HiOutlineChatAlt2, 
+  HiOutlineCollection, HiOutlineTemplate, HiOutlinePencilAlt,
+  HiOutlineCog, HiOutlineSearch, HiOutlineUsers, HiOutlineChartBar,
+  HiOutlineUserGroup, HiOutlineCloudDownload, HiOutlineLogout,
+  HiOutlinePlus, HiOutlinePencil, HiOutlineTrash, HiOutlineX,
+  HiOutlineCheck, HiOutlineEye, HiOutlineEyeOff, HiOutlineRefresh,
+  HiOutlineDocumentText, HiOutlineSave, HiOutlineExternalLink,
+  HiOutlineTrendingUp, HiOutlineCalendar, HiOutlineLightBulb,
+  HiOutlineBadgeCheck, HiOutlineClipboardList, HiOutlineSparkles
+} from 'react-icons/hi';
 
 // Admin credentials - configure via environment variables in production
 const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || 'profmendel@gmail.com';
 const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'Gig@50chin';
 
-const Section = ({ title, children, actions }) => (
-  <section className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-    <div className="flex items-center justify-between mb-4">
-      <h3 className="text-lg font-semibold">{title}</h3>
+const Section = ({ title, children, actions, icon: Icon }) => (
+  <section className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+      <div className="flex items-center gap-3">
+        {Icon && <Icon className="w-5 h-5 text-purple-600" />}
+        <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+      </div>
       {actions}
     </div>
-    {children}
+    <div className="p-6">
+      {children}
+    </div>
   </section>
 );
+
+const Button = ({ children, variant = 'primary', size = 'md', icon: Icon, ...props }) => {
+  const variants = {
+    primary: 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-md hover:shadow-lg',
+    secondary: 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200',
+    danger: 'bg-red-50 hover:bg-red-100 text-red-600 border border-red-200',
+    success: 'bg-green-50 hover:bg-green-100 text-green-600 border border-green-200',
+    ghost: 'hover:bg-gray-100 text-gray-600',
+  };
+  const sizes = {
+    sm: 'px-3 py-1.5 text-sm',
+    md: 'px-4 py-2 text-sm',
+    lg: 'px-6 py-3 text-base',
+  };
+  return (
+    <button 
+      className={`inline-flex items-center justify-center gap-2 font-medium rounded-lg transition-all ${variants[variant]} ${sizes[size]} disabled:opacity-50 disabled:cursor-not-allowed`}
+      {...props}
+    >
+      {Icon && <Icon className="w-4 h-4" />}
+      {children}
+    </button>
+  );
+};
 
 const Pill = ({ children, className = '' }) => (
   <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${className}`}>
@@ -215,7 +255,7 @@ function EnquiriesTab() {
               {/* Assignment Section */}
               <div className="bg-blue-50 rounded-xl p-4 mb-6">
                 <div className="text-sm font-medium text-blue-800 mb-3 flex items-center gap-2">
-                  <span>👥</span> Assign Team Members
+                  <HiOutlineUsers className="w-4 h-4" /> Assign Team Members
                 </div>
                 <div className="flex flex-wrap gap-2 mb-3">
                   {teamMembers.map(member => {
@@ -735,15 +775,15 @@ function EmailsTab() {
           </div>
           
           <div className="flex justify-between items-center">
-            <p className="text-xs text-gray-500">
-              💡 Your signature will be automatically added below the message
+            <p className="text-xs text-gray-500 flex items-center gap-1">
+              <HiOutlineLightBulb className="w-4 h-4 text-amber-500" /> Your signature will be automatically added below the message
             </p>
             <button 
               onClick={send} 
               disabled={sending || !form.to || !form.subject}
-              className="btn-primary px-6 py-2 rounded-lg text-white disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-primary px-6 py-2 rounded-lg text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
-              {sending ? 'Sending...' : '✉️ Send Email'}
+              {sending ? 'Sending...' : <><HiOutlineMail className="w-4 h-4" /> Send Email</>}
             </button>
           </div>
         </div>
@@ -919,9 +959,11 @@ function ActivityTab() {
 function UsersTab() {
   const [users, setLocUsers] = useState(()=> getUsers());
   const [showPassword, setShowPassword] = useState({});
+  const [editingId, setEditingId] = useState(null);
+  const [formData, setFormData] = useState(null);
   
-  const add = () => { 
-    const next=[...users,{
+  const startAdd = () => {
+    const newUser = {
       id:`${Date.now()}`,
       email:'',
       name:'',
@@ -930,25 +972,48 @@ function UsersTab() {
       password:'',
       active: true,
       createdAt: new Date().toISOString()
-    }]; 
-    setLocUsers(next); 
-    setUsers(next); 
+    };
+    setFormData(newUser);
+    setEditingId('new');
   };
   
-  const update=(id,patch)=>{ 
-    const next=users.map(u=>u.id===id?{...u,...patch}:u); 
-    setLocUsers(next); 
-    setUsers(next); 
+  const startEdit = (user) => {
+    setFormData({...user});
+    setEditingId(user.id);
   };
   
-  const remove=(id)=>{ 
-    const next=users.filter(u=>u.id!==id); 
+  const cancelEdit = () => {
+    setEditingId(null);
+    setFormData(null);
+  };
+  
+  const saveUser = () => {
+    if (!formData.email || !formData.name) {
+      alert('Please fill in name and email');
+      return;
+    }
+    if (editingId === 'new') {
+      const next = [...users, formData];
+      setLocUsers(next);
+      setUsers(next);
+    } else {
+      const next = users.map(u => u.id === editingId ? formData : u);
+      setLocUsers(next);
+      setUsers(next);
+    }
+    setEditingId(null);
+    setFormData(null);
+  };
+  
+  const remove = (id) => { 
+    if (!confirm('Remove this team member?')) return;
+    const next = users.filter(u => u.id !== id); 
     setLocUsers(next); 
     setUsers(next); 
   };
 
-  const togglePassword = (id) => {
-    setShowPassword(prev => ({...prev, [id]: !prev[id]}));
+  const togglePassword = () => {
+    setShowPassword(prev => ({...prev, [editingId]: !prev[editingId]}));
   };
 
   const generatePassword = () => {
@@ -959,126 +1024,195 @@ function UsersTab() {
     }
     return pass;
   };
+  
+  const updateForm = (patch) => {
+    setFormData(prev => ({...prev, ...patch}));
+  };
+
+  const getRoleBadgeColor = (role) => {
+    switch(role) {
+      case 'Admin': return 'bg-purple-100 text-purple-700';
+      case 'Contributor': return 'bg-blue-100 text-blue-700';
+      case 'Viewer': return 'bg-gray-100 text-gray-700';
+      default: return 'bg-gray-100 text-gray-700';
+    }
+  };
 
   return (
-    <Section title="Team Members" actions={
-      <button onClick={add} className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 px-4 py-2 rounded-lg text-white font-medium flex items-center gap-2 transition-all shadow-md">
-        <span className="text-lg">+</span> Add Team Member
-      </button>
+    <Section title="Team Members" icon={HiOutlineUsers} actions={
+      editingId === null && (
+        <Button variant="primary" onClick={startAdd}>
+          <HiOutlinePlus className="w-4 h-4" /> Add Team Member
+        </Button>
+      )
     }>
-      <div className="space-y-4">
-        {users.map(u=> (
-          <div key={u.id} className={`p-5 border-2 rounded-xl ${u.active !== false ? 'border-gray-200 bg-white' : 'border-gray-100 bg-gray-50 opacity-60'}`}>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-              {/* Name */}
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Full Name</label>
-                <input 
-                  className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
-                  placeholder="John Smith" 
-                  value={u.name||''} 
-                  onChange={(e)=>update(u.id,{name:e.target.value})} 
-                />
-              </div>
-              
-              {/* Email */}
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Email</label>
-                <input 
-                  className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
-                  placeholder="john@hostpenny.co.uk" 
-                  type="email"
-                  value={u.email} 
-                  onChange={(e)=>update(u.id,{email:e.target.value})} 
-                />
-              </div>
-              
-              {/* Job Title */}
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Job Title</label>
-                <select 
-                  className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
-                  value={u.jobTitle||'Web Developer'} 
-                  onChange={(e)=>update(u.id,{jobTitle:e.target.value})}
-                >
-                  {teamRoles.map(role => (
-                    <option key={role} value={role}>{role}</option>
-                  ))}
-                </select>
-              </div>
-              
-              {/* Access Level */}
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Access Level</label>
-                <select 
-                  className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
-                  value={u.role} 
-                  onChange={(e)=>update(u.id,{role:e.target.value})}
-                >
-                  <option value="Admin">Admin (Full Access)</option>
-                  <option value="Contributor">Contributor (View & Edit)</option>
-                  <option value="Viewer">Viewer (Read Only)</option>
-                </select>
-              </div>
+      {/* Edit/Add Form */}
+      {editingId !== null && formData && (
+        <div className="mb-6 p-6 bg-gradient-to-br from-purple-50 to-indigo-50 border-2 border-purple-200 rounded-xl">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+              {editingId === 'new' ? (
+                <><HiOutlinePlus className="w-5 h-5 text-purple-600" /> Add New Team Member</>
+              ) : (
+                <><HiOutlinePencil className="w-5 h-5 text-purple-600" /> Edit Team Member</>
+              )}
+            </h3>
+            <button onClick={cancelEdit} className="text-gray-400 hover:text-gray-600">
+              <HiOutlineX className="w-5 h-5" />
+            </button>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+              <input 
+                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
+                placeholder="John Smith" 
+                value={formData.name || ''} 
+                onChange={(e) => updateForm({name: e.target.value})} 
+              />
             </div>
             
-            {/* Password Row */}
-            <div className="flex flex-wrap items-end gap-4 pt-3 border-t border-gray-100">
-              <div className="flex-1 min-w-[200px]">
-                <label className="block text-xs font-medium text-gray-500 mb-1">Login Password</label>
-                <div className="flex gap-2">
-                  <div className="relative flex-1">
-                    <input 
-                      type={showPassword[u.id] ? 'text' : 'password'}
-                      className="w-full border rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-purple-500 focus:border-transparent font-mono" 
-                      placeholder="Create password" 
-                      value={u.password||''} 
-                      onChange={(e)=>update(u.id,{password:e.target.value})} 
-                    />
-                    <button 
-                      type="button"
-                      onClick={() => togglePassword(u.id)}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    >
-                      {showPassword[u.id] ? '👁️' : '👁️‍🗨️'}
-                    </button>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
+              <input 
+                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
+                placeholder="john@hostpenny.co.uk" 
+                type="email"
+                value={formData.email || ''} 
+                onChange={(e) => updateForm({email: e.target.value})} 
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Job Title</label>
+              <select 
+                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
+                value={formData.jobTitle || 'Web Developer'} 
+                onChange={(e) => updateForm({jobTitle: e.target.value})}
+              >
+                {teamRoles.map(role => (
+                  <option key={role} value={role}>{role}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Access Level</label>
+              <select 
+                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
+                value={formData.role || 'Contributor'} 
+                onChange={(e) => updateForm({role: e.target.value})}
+              >
+                <option value="Admin">Admin (Full Access)</option>
+                <option value="Contributor">Contributor (View & Edit)</option>
+                <option value="Viewer">Viewer (Read Only)</option>
+              </select>
+            </div>
+          </div>
+          
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Login Password</label>
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <input 
+                  type={showPassword[editingId] ? 'text' : 'password'}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2.5 pr-10 focus:ring-2 focus:ring-purple-500 focus:border-transparent font-mono" 
+                  placeholder="Create password" 
+                  value={formData.password || ''} 
+                  onChange={(e) => updateForm({password: e.target.value})} 
+                />
+                <button 
+                  type="button"
+                  onClick={togglePassword}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showPassword[editingId] ? <HiOutlineEyeOff className="w-5 h-5" /> : <HiOutlineEye className="w-5 h-5" />}
+                </button>
+              </div>
+              <Button variant="secondary" onClick={() => updateForm({password: generatePassword()})}>
+                <HiOutlineRefresh className="w-4 h-4" /> Generate
+              </Button>
+            </div>
+          </div>
+          
+          <div className="flex items-center justify-between pt-4 border-t border-purple-200">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input 
+                type="checkbox" 
+                checked={formData.active !== false} 
+                onChange={(e) => updateForm({active: e.target.checked})}
+                className="w-4 h-4 rounded text-purple-600 focus:ring-purple-500"
+              />
+              <span className="text-sm text-gray-700">Active member</span>
+            </label>
+            
+            <div className="flex gap-2">
+              <Button variant="ghost" onClick={cancelEdit}>Cancel</Button>
+              <Button variant="success" onClick={saveUser}>
+                <HiOutlineSave className="w-4 h-4" /> Save Member
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Team Members List */}
+      <div className="space-y-3">
+        {users.length === 0 ? (
+          <div className="text-center py-12 text-gray-500">
+            <HiOutlineUsers className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+            <p>No team members yet. Add your first team member to get started.</p>
+          </div>
+        ) : (
+          users.map(u => (
+            <div 
+              key={u.id} 
+              className={`p-4 border rounded-xl flex items-center justify-between transition-all hover:shadow-md ${
+                u.active !== false ? 'bg-white border-gray-200' : 'bg-gray-50 border-gray-100 opacity-60'
+              } ${editingId === u.id ? 'ring-2 ring-purple-500' : ''}`}
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white text-lg font-semibold">
+                  {(u.name || u.email || '?').charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-semibold text-gray-900">{u.name || 'Unnamed'}</h4>
+                    {u.active === false && (
+                      <span className="text-xs px-2 py-0.5 bg-gray-200 text-gray-600 rounded-full">Inactive</span>
+                    )}
                   </div>
-                  <button 
-                    onClick={() => update(u.id, {password: generatePassword()})}
-                    className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-700 whitespace-nowrap"
-                  >
-                    Generate
-                  </button>
+                  <p className="text-sm text-gray-500">{u.email}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-xs text-gray-400">{u.jobTitle || 'Team Member'}</span>
+                    <span className="text-gray-300">•</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getRoleBadgeColor(u.role)}`}>
+                      {u.role}
+                    </span>
+                  </div>
                 </div>
               </div>
               
-              <div className="flex items-center gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input 
-                    type="checkbox" 
-                    checked={u.active !== false} 
-                    onChange={(e) => update(u.id, {active: e.target.checked})}
-                    className="w-4 h-4 rounded text-purple-600 focus:ring-purple-500"
-                  />
-                  <span className="text-sm text-gray-600">Active</span>
-                </label>
-                
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" onClick={() => startEdit(u)}>
+                  <HiOutlinePencil className="w-4 h-4" /> Edit
+                </Button>
                 {u.id !== 'u1' && (
-                  <button 
-                    onClick={()=>remove(u.id)} 
-                    className="text-red-600 hover:text-red-700 text-sm font-medium px-3 py-1 hover:bg-red-50 rounded-lg transition-colors"
-                  >
-                    Remove
-                  </button>
+                  <Button variant="danger" onClick={() => remove(u.id)}>
+                    <HiOutlineTrash className="w-4 h-4" />
+                  </Button>
                 )}
               </div>
             </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
-      <div className="mt-4 p-4 bg-purple-50 rounded-xl border border-purple-100">
-        <p className="text-sm text-purple-800">
-          <strong>💡 Quick Tip:</strong> Team members can log in using their email and password. Assign them to projects in the Enquiries tab.
+      
+      <div className="mt-4 p-4 bg-blue-50 rounded-xl border border-blue-100 flex items-start gap-3">
+        <HiOutlineDocumentText className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
+        <p className="text-sm text-blue-800">
+          <strong>Quick Tip:</strong> Team members can log in using their email and password. Assign them to projects in the Enquiries tab.
         </p>
       </div>
     </Section>
@@ -1090,7 +1224,7 @@ function BackupTab() {
     const data = exportAll();
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = `hostpenny-backup-${Date.now()}.json`; a.click();
+    const a = document.createElement('a'); a.href = url; a.download = `hostpenny-backup-${new Date().toISOString().split('T')[0]}.json`; a.click();
   };
   const onImport = (e) => {
     const f = e.target.files?.[0]; if (!f) return;
@@ -1101,10 +1235,54 @@ function BackupTab() {
     reader.readAsText(f);
   };
   return (
-    <Section title="Backup & Restore">
-      <div className="flex items-center gap-3">
-        <button onClick={doExport} className="btn-primary px-4 py-2 rounded-lg text-white">Export Backup</button>
-        <label className="px-4 py-2 border rounded-lg cursor-pointer">Import Backup<input type="file" accept="application/json" className="hidden" onChange={onImport}/></label>
+    <Section title="Backup & Restore" icon={HiOutlineCloudDownload}>
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* Export Card */}
+        <div className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
+              <HiOutlineCloudDownload className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-900">Export Backup</h3>
+              <p className="text-sm text-gray-500">Download all your data</p>
+            </div>
+          </div>
+          <p className="text-sm text-gray-600 mb-4">
+            Create a backup of all your settings, testimonials, portfolio items, templates, and team data.
+          </p>
+          <Button variant="success" onClick={doExport} className="w-full justify-center">
+            <HiOutlineCloudDownload className="w-4 h-4" /> Download Backup
+          </Button>
+        </div>
+        
+        {/* Import Card */}
+        <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+              <HiOutlineRefresh className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-900">Restore Backup</h3>
+              <p className="text-sm text-gray-500">Import a previous backup</p>
+            </div>
+          </div>
+          <p className="text-sm text-gray-600 mb-4">
+            Restore your data from a previously exported backup file. This will overwrite current data.
+          </p>
+          <label className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-white border-2 border-dashed border-blue-300 rounded-xl cursor-pointer hover:bg-blue-50 hover:border-blue-400 transition-colors text-blue-700 font-medium">
+            <HiOutlineDocumentText className="w-4 h-4" />
+            Select Backup File
+            <input type="file" accept="application/json" className="hidden" onChange={onImport}/>
+          </label>
+        </div>
+      </div>
+      
+      <div className="mt-6 p-4 bg-amber-50 rounded-xl border border-amber-200 flex items-start gap-3">
+        <HiOutlineDocumentText className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
+        <div className="text-sm text-amber-800">
+          <strong>Important:</strong> Backup files are stored locally. For cloud backups, download the file and store it in a secure location like Google Drive or Dropbox.
+        </div>
       </div>
     </Section>
   );
@@ -1139,7 +1317,7 @@ function DashboardTab() {
       <div className="bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 rounded-2xl p-6 text-white">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold">Welcome back! 👋</h2>
+            <h2 className="text-2xl font-bold flex items-center gap-2">Welcome back! <HiOutlineSparkles className="w-6 h-6" /></h2>
             <p className="text-purple-100 mt-1">Here's what's happening with your business today.</p>
           </div>
           <div className="text-right">
@@ -1152,8 +1330,8 @@ function DashboardTab() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
           <div className="flex items-center justify-between">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-xl">
-              📬
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white">
+              <HiOutlineMail className="w-6 h-6" />
             </div>
             <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">Today</span>
           </div>
@@ -1165,8 +1343,8 @@ function DashboardTab() {
         
         <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
           <div className="flex items-center justify-between">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white text-xl">
-              📊
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white">
+              <HiOutlineChartBar className="w-6 h-6" />
             </div>
             <span className="text-xs font-medium text-purple-600 bg-purple-50 px-2 py-1 rounded-full">7 days</span>
           </div>
@@ -1178,8 +1356,8 @@ function DashboardTab() {
         
         <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
           <div className="flex items-center justify-between">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white text-xl">
-              📈
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white">
+              <HiOutlineTrendingUp className="w-6 h-6" />
             </div>
             <span className="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded-full">30 days</span>
           </div>
@@ -1191,8 +1369,8 @@ function DashboardTab() {
         
         <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
           <div className="flex items-center justify-between">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center text-white text-xl">
-              🎯
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center text-white">
+              <HiOutlineBadgeCheck className="w-6 h-6" />
             </div>
             <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">Won</span>
           </div>
@@ -1341,20 +1519,20 @@ export default function Admin() {
   };
 
   const menuItems = [
-    { key:'dashboard', label:'Overview', icon:'📊' },
-    { key:'enquiries', label:'Enquiries', icon:'📬' },
-    { key:'inbox', label:'Inbox', icon:'📥' },
-    { key:'testimonials', label:'Testimonials', icon:'💬' },
-    { key:'portfolio', label:'Portfolio', icon:'🎨' },
-    { key:'emails', label:'Emails', icon:'✉️' },
-    { key:'templates', label:'Templates', icon:'📝' },
-    { key:'signatures', label:'Signatures', icon:'✍️' },
-    { key:'settings', label:'Settings', icon:'⚙️' },
-    { key:'seo', label:'SEO', icon:'🔍' },
-    { key:'subscribers', label:'Subscribers', icon:'👥' },
-    { key:'activity', label:'Activity', icon:'📈' },
-    { key:'users', label:'Team', icon:'👨‍💻' },
-    { key:'backup', label:'Backup', icon:'💾' },
+    { key:'dashboard', label:'Overview', icon: HiOutlineChartBar },
+    { key:'enquiries', label:'Enquiries', icon: HiOutlineMail },
+    { key:'inbox', label:'Inbox', icon: HiOutlineInbox },
+    { key:'testimonials', label:'Testimonials', icon: HiOutlineChatAlt2 },
+    { key:'portfolio', label:'Portfolio', icon: HiOutlineCollection },
+    { key:'emails', label:'Emails', icon: HiOutlineDocumentText },
+    { key:'templates', label:'Templates', icon: HiOutlineTemplate },
+    { key:'signatures', label:'Signatures', icon: HiOutlinePencilAlt },
+    { key:'settings', label:'Settings', icon: HiOutlineCog },
+    { key:'seo', label:'SEO', icon: HiOutlineSearch },
+    { key:'subscribers', label:'Subscribers', icon: HiOutlineUserGroup },
+    { key:'activity', label:'Activity', icon: HiOutlineChartBar },
+    { key:'users', label:'Team', icon: HiOutlineUsers },
+    { key:'backup', label:'Backup', icon: HiOutlineCloudDownload },
   ];
 
   if (!loggedIn) {
@@ -1402,7 +1580,7 @@ export default function Admin() {
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 hover:text-white"
                   >
-                    {showPassword ? '🙈' : '👁️'}
+                    {showPassword ? <HiOutlineEyeOff className="w-5 h-5" /> : <HiOutlineEye className="w-5 h-5" />}
                   </button>
                 </div>
               </div>
@@ -1454,7 +1632,9 @@ export default function Admin() {
           <aside className="w-64 shrink-0">
             <div className="bg-white border rounded-2xl p-4 shadow-sm sticky top-6">
               <nav className="space-y-1">
-                {menuItems.map((item)=> (
+                {menuItems.map((item)=> {
+                  const IconComponent = item.icon;
+                  return (
                   <button
                     key={item.key}
                     onClick={()=>setTab(item.key)}
@@ -1464,10 +1644,10 @@ export default function Admin() {
                         : 'hover:bg-gray-50 text-gray-700'
                     }`}
                   >
-                    <span className="text-lg">{item.icon}</span>
+                    <IconComponent className="w-5 h-5" />
                     <span className="font-medium">{item.label}</span>
                   </button>
-                ))}
+                )})}
               </nav>
 
               <div className="mt-4 pt-4 border-t">
@@ -1475,7 +1655,7 @@ export default function Admin() {
                   onClick={logout} 
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-red-600 hover:border-red-200 transition-all flex items-center justify-center gap-2"
                 >
-                  <span>🚪</span> Logout
+                  <HiOutlineLogout className="w-5 h-5" /> Logout
                 </button>
               </div>
             </div>
