@@ -196,84 +196,85 @@ const Hero = () => {
             </motion.div>
           </motion.div>
 
-          {/* Right Content - Stats Cards */}
+          {/* Right Content - Client Success Story */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.4 }}
             className="relative hidden lg:block"
           >
-            {/* Main Card */}
+            {/* Main Success Story Card */}
             <motion.div
               animate={{ y: [0, -10, 0] }}
               transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
               className="relative bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-2xl rounded-3xl p-8 border border-white/10 shadow-2xl"
             >
               <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-400 text-sm font-medium">Project Progress</span>
-                  <span className="text-green-400 text-sm font-semibold">On Track</span>
-                </div>
+                {/* Quote Mark */}
+                <div className="text-6xl text-purple-400/30 font-serif leading-none">"</div>
                 
-                <div className="space-y-4">
-                  {['Discovery & Planning', 'Design & Prototype', 'Development', 'Launch'].map((phase, i) => (
-                    <div key={i} className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-white font-medium">{phase}</span>
-                        <span className="text-gray-400">{i < 3 ? '100%' : '75%'}</span>
-                      </div>
-                      <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={{ width: i < 3 ? '100%' : '75%' }}
-                          transition={{ duration: 1, delay: 1.5 + i * 0.2 }}
-                          className={`h-full rounded-full ${i < 3 ? 'bg-gradient-to-r from-green-400 to-emerald-500' : 'bg-gradient-to-r from-orange-400 to-orange-500'}`}
-                        />
-                      </div>
-                    </div>
-                  ))}
+                {/* Testimonial */}
+                <p className="text-white text-lg leading-relaxed -mt-6">
+                  HostPenny turned my idea into a <span className="text-green-400 font-semibold">fully working app</span> in just 5 weeks. We hit <span className="text-orange-400 font-bold">2,000 users</span> in our first month.
+                </p>
+                
+                {/* Results Grid */}
+                <div className="grid grid-cols-3 gap-4 py-4 border-y border-white/10">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-green-400">0 → 2K</div>
+                    <div className="text-xs text-gray-400">Users in 30 days</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-orange-400">5 weeks</div>
+                    <div className="text-xs text-gray-400">Idea to Launch</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-purple-400">£47K</div>
+                    <div className="text-xs text-gray-400">Revenue Month 2</div>
+                  </div>
                 </div>
 
-                {/* Mini Stats */}
-                <div className="grid grid-cols-3 gap-4 pt-4 border-t border-white/10">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-white">4-6</div>
-                    <div className="text-xs text-gray-400">Weeks to MVP</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-white">24h</div>
-                    <div className="text-xs text-gray-400">Response Time</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-white">10+</div>
-                    <div className="text-xs text-gray-400">Senior Devs</div>
+                {/* Client Info */}
+                <div className="flex items-center gap-4">
+                  <img 
+                    src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop"
+                    alt="Sarah Mitchell"
+                    className="w-14 h-14 rounded-full border-2 border-purple-400/50 object-cover"
+                  />
+                  <div>
+                    <div className="text-white font-semibold">Sarah Mitchell</div>
+                    <div className="text-gray-400 text-sm">Founder, FitTrack Pro</div>
+                    <div className="flex items-center gap-1 mt-1">
+                      {[...Array(5)].map((_, i) => (
+                        <FaStar key={i} className="text-yellow-400 text-xs" />
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
             </motion.div>
 
-            {/* Floating Badge */}
+            {/* Floating "Real Results" Badge */}
             <motion.div
               animate={{ y: [0, -8, 0], x: [0, 5, 0] }}
               transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
               className="absolute -top-4 -right-4 bg-gradient-to-br from-green-400 to-emerald-500 text-white px-4 py-2 rounded-xl font-bold text-sm shadow-lg shadow-green-500/30"
             >
-              ✓ 95% On-Time
+              ✓ Real Results
             </motion.div>
 
-            {/* Floating Tech Stack */}
+            {/* Floating "Just Launched" Badge */}
             <motion.div
               animate={{ y: [0, 8, 0], x: [0, -5, 0] }}
               transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
               className="absolute -bottom-6 -left-6 bg-white/10 backdrop-blur-xl rounded-2xl px-5 py-3 border border-white/10"
             >
               <div className="flex items-center gap-3">
-                <div className="flex -space-x-2">
-                  {['⚛️', '🔷', '🟢', '🔶'].map((emoji, i) => (
-                    <span key={i} className="text-lg">{emoji}</span>
-                  ))}
-                </div>
-                <span className="text-white text-sm font-medium">Modern Tech Stack</span>
+                <span className="relative flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                </span>
+                <span className="text-white text-sm font-medium">3 projects launched this month</span>
               </div>
             </motion.div>
           </motion.div>
