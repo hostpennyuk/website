@@ -1,172 +1,143 @@
-import { motion } from 'framer-motion';
-import { FaLightbulb, FaDraftingCompass, FaCode, FaRocket } from 'react-icons/fa';
+﻿import { motion } from 'framer-motion';
+import { FaLightbulb, FaDraftingCompass, FaCode, FaRocket, FaArrowRight } from 'react-icons/fa';
 import { useCtaModal } from '../cta/CtaContext';
 
 const Process = () => {
+  const { openModal } = useCtaModal?.() ?? { openModal: () => {} };
+
   const steps = [
     {
       number: '01',
       icon: FaLightbulb,
-      title: 'Discover',
-      description: 'A 45‑minute workshop to align goals, define success, and pick the shortest path to value.',
-      image: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=300&h=250&fit=crop',
-      color: 'from-orange-500 to-orange-600',
+      title: 'Discovery Call',
+      duration: '30 min',
+      description: 'Tell us your vision. We will give you an honest assessment and a rough timeline - no BS, no sales pitch.',
+      color: 'from-orange-500 to-amber-500',
     },
     {
       number: '02',
       icon: FaDraftingCompass,
       title: 'Prototype',
-      description: 'Clickable in days. Validate flows, copy, and conversion paths before we write a line of code.',
-      image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=300&h=250&fit=crop',
-      color: 'from-purple-800 to-purple-900',
+      duration: '1-2 weeks',
+      description: 'See your idea come to life in clickable form. Test flows, validate assumptions, iterate fast.',
+      color: 'from-purple-500 to-violet-500',
     },
     {
       number: '03',
       icon: FaCode,
       title: 'Build',
-      description: 'Weekly sprints. Senior engineers only. Transparent demos, predictable delivery.',
-      image: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=300&h=250&fit=crop',
-      color: 'from-purple-700 to-purple-800',
+      duration: '4-6 weeks',
+      description: 'Weekly demos, transparent progress. Senior engineers only. No surprises.',
+      color: 'from-pink-500 to-rose-500',
     },
     {
       number: '04',
       icon: FaRocket,
       title: 'Launch',
-      description: 'Go live with confidence—monitoring, analytics, and iteration plan included.',
-      image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=300&h=250&fit=crop',
-      color: 'from-purple-900 to-violet-900',
+      duration: 'Day 1',
+      description: 'Go live with monitoring, analytics, and support. We do not disappear after launch.',
+      color: 'from-emerald-500 to-teal-500',
     },
   ];
 
-  const letterSpacing = (text) => {
-    return text.split('').map((char, index) => (
-      <motion.span
-        key={index}
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.05, delay: index * 0.03 }}
-        className="inline-block"
-      >
-        {char === ' ' ? '\u00A0' : char}
-      </motion.span>
-    ));
-  };
-
   return (
-    <section className="py-20 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #4c1d95 0%, #5b21b6 100%)' }}>
-      <div className="container-custom">
-        {/* Section Header */}
+    <section className="py-24 relative overflow-hidden bg-gradient-to-b from-slate-900 to-purple-950">
+      {/* Background */}
+      <div className="absolute inset-0">
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-purple-500/5 rounded-full blur-[150px]" />
+      </div>
+
+      <div className="container-custom relative z-10">
+        {/* Header */}
         <div className="text-center mb-16">
-          <motion.p
+          <motion.span
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-white font-semibold mb-2 tracking-wider uppercase text-sm"
+            className="inline-block px-4 py-1.5 bg-purple-500/10 border border-purple-500/20 rounded-full text-purple-400 text-sm font-semibold mb-4"
           >
-            Process
-          </motion.p>
+            Our Process
+          </motion.span>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-heading font-bold text-white"
+            className="text-3xl sm:text-4xl md:text-5xl font-heading font-bold text-white"
           >
-            <span className="block">{letterSpacing('From idea to')}</span>
-            <span className="block">{letterSpacing('launch — fast')}</span>
+            From Idea to Launch
+            <span className="block text-gradient">In Weeks, Not Months</span>
           </motion.h2>
         </div>
 
-        {/* Steps Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {steps.map((step, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.15 }}
-              whileHover={{ y: -10 }}
-              className="relative group"
-            >
-              {/* Step Number Background */}
-              <div className="absolute -top-6 -right-6 text-[120px] font-bold text-white/20 opacity-50 z-0 group-hover:text-orange-500/30 transition-colors duration-300">
-                {step.number}
-              </div>
+        {/* Steps */}
+        <div className="relative">
+          {/* Connection Line */}
+          <div className="hidden lg:block absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-orange-500 via-purple-500 to-emerald-500 transform -translate-y-1/2 opacity-20" />
 
-              <div className="relative z-10 bg-white/95 backdrop-blur-sm rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300">
-                {/* Image */}
-                <div className="relative h-48 overflow-hidden">
-                  <img
-                    src={step.image}
-                    alt={step.title}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
-                  <div className={`absolute inset-0 bg-gradient-to-t ${step.color} opacity-60`} />
-                  
-                  {/* Step Number Badge */}
-                  <div className="absolute bottom-4 left-4">
-                    <div className={`w-16 h-16 rounded-xl bg-gradient-to-br ${step.color} flex items-center justify-center shadow-lg`}>
-                      <span className="text-white font-bold text-2xl">{step.number}</span>
-                    </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+            {steps.map((step, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.15 }}
+                whileHover={{ y: -10 }}
+                className="relative group"
+              >
+                <div className="relative bg-white/5 backdrop-blur-xl rounded-2xl p-8 border border-white/10 hover:border-white/20 transition-all h-full">
+                  {/* Step Number */}
+                  <div className={`absolute -top-4 -right-4 w-12 h-12 rounded-xl bg-gradient-to-br ${step.color} flex items-center justify-center text-white font-bold shadow-lg`}>
+                    {step.number}
                   </div>
-                </div>
 
-                {/* Content */}
-                <div className="p-6">
                   {/* Icon */}
-                  <motion.div
-                    whileHover={{ rotate: 360, scale: 1.1 }}
-                    transition={{ duration: 0.6 }}
-                    className="inline-block mb-4"
-                  >
-                    <div className={`w-14 h-14 rounded-lg bg-gradient-to-br ${step.color} flex items-center justify-center shadow-md`}>
-                      <step.icon className="text-white text-2xl" />
-                    </div>
-                  </motion.div>
+                  <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${step.color} bg-opacity-10 flex items-center justify-center mb-6`}>
+                    <step.icon className={`text-2xl bg-gradient-to-r ${step.color} bg-clip-text text-transparent`} style={{ WebkitTextFillColor: 'transparent', background: `linear-gradient(to right, var(--tw-gradient-from), var(--tw-gradient-to))` }} />
+                    <step.icon className={`text-2xl text-white opacity-80`} />
+                  </div>
 
-                  <h3 className="text-xl font-heading font-bold text-dark mb-3 group-hover:text-primary transition-colors">
+                  {/* Duration Badge */}
+                  <span className="inline-block px-3 py-1 bg-white/10 rounded-full text-xs font-semibold text-gray-300 mb-4">
+                    {step.duration}
+                  </span>
+
+                  {/* Content */}
+                  <h3 className="text-xl font-heading font-bold text-white mb-3 group-hover:text-orange-400 transition-colors">
                     {step.title}
                   </h3>
-                  <p className="text-gray-600 text-sm leading-relaxed mb-4">
+                  <p className="text-gray-400 leading-relaxed">
                     {step.description}
                   </p>
-
-                  {/* Link */}
-                  <CallToActionLink />
                 </div>
-              </div>
-
-              {/* Connection Line (not on last item) */}
-              {index < steps.length - 1 && (
-                <div className="hidden lg:block absolute top-1/2 -right-4 w-8 h-0.5 bg-gradient-to-r from-primary to-secondary z-0" />
-              )}
-            </motion.div>
-          ))}
+              </motion.div>
+            ))}
+          </div>
         </div>
+
+        {/* CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mt-16"
+        >
+          <motion.button
+            onClick={openModal}
+            whileHover={{ scale: 1.03, boxShadow: '0 20px 40px rgba(255, 87, 34, 0.25)' }}
+            whileTap={{ scale: 0.98 }}
+            className="group px-8 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-bold text-lg shadow-lg shadow-orange-500/25"
+          >
+            <span className="flex items-center gap-2">
+              Start Your Project Today
+              <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
+            </span>
+          </motion.button>
+          <p className="text-gray-400 mt-4 text-sm">Free consultation. No obligation.</p>
+        </motion.div>
       </div>
     </section>
   );
 };
 
 export default Process;
-
-// Inline CTA link that opens the global modal
-const CallToActionLink = () => {
-  const { openModal } = useCtaModal?.() ?? { openModal: () => {} };
-  return (
-    <button
-      onClick={openModal}
-      className="inline-flex items-center text-primary font-semibold hover:gap-2 transition-all duration-300"
-    >
-      Start your project
-      <motion.span
-        animate={{ x: [0, 5, 0] }}
-        transition={{ duration: 1.5, repeat: Infinity }}
-      >
-        →
-      </motion.span>
-    </button>
-  );
-};

@@ -148,9 +148,10 @@ export const incMetric = (name) => {
 
 // Defaults (can be edited in Admin)
 const defaultTestimonials = [
-  { id: 't1', name: 'Linda Jhon', position: 'Managing Director', image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop', quote: 'Digital marketing can be very complex, but our team is here to help you through this process and get tangible results.' },
-  { id: 't2', name: 'Katie Hanna', position: 'Leadership Team', image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop', quote: 'We work with exceptional companies and make it our mission to help them succeed.' },
-  { id: 't3', name: 'Ronald Richard', position: 'Senior Consultant', image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop', quote: 'Equipped with all the skillsets to ship reliably.' },
+  { id: 't1', name: 'Sarah Chen', position: 'Founder & CEO, FitTrack', image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop', quote: 'HostPenny delivered our MVP in just 5 weeks. We launched, got 2,000 users in the first month, and raised our seed round 3 weeks later. Best investment we made.', company: 'FitTrack Pro', result: '2,000 users in 30 days' },
+  { id: 't2', name: 'Marcus Johnson', position: 'CTO, PayFlow', image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop', quote: 'We had tried 2 other agencies before finding HostPenny. The difference? They actually shipped. On time, on budget, and our conversion rate jumped 340% after launch.', company: 'PayFlow', result: '340% conversion increase' },
+  { id: 't3', name: 'Emily Watson', position: 'Founder, StyleBox', image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop', quote: 'From Figma mockup to live app in 4 weeks. The team understood our vision immediately and delivered beyond expectations. Our app is now doing $50k MRR.', company: 'StyleBox', result: '$50k MRR achieved' },
+  { id: 't4', name: 'David Park', position: 'CEO, CloudSync', image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop', quote: 'Senior engineers who actually communicate. No hand-holding needed. They built our entire SaaS platform while I focused on sales. 10/10 would recommend.', company: 'CloudSync', result: 'Full SaaS in 8 weeks' },
 ];
 
 const defaultPortfolio = [

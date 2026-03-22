@@ -83,11 +83,11 @@ const Navbar = () => {
             ))}
             <motion.button
               onClick={openModal}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="px-5 py-3 rounded-lg font-semibold text-white shadow-lg transition-all focus:outline-none focus:ring-4 focus:ring-orange-200 bg-gradient-to-r from-purple-800 via-pink-600 to-orange-500 hover:shadow-xl"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.98 }}
+              className="px-6 py-3 rounded-xl font-bold text-white shadow-lg transition-all focus:outline-none focus:ring-4 focus:ring-orange-200/50 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-red-500 hover:shadow-xl"
             >
-              Let's Build Something Amazing
+              Get Free Quote
             </motion.button>
           </div>
 
@@ -129,8 +129,8 @@ const Navbar = () => {
                     {link.label}
                   </Link>
                 ))}
-                <button onClick={() => { openModal(); setIsMobileMenuOpen(false); }} className="w-full px-5 py-3 rounded-lg font-semibold text-white shadow-lg transition-all focus:outline-none focus:ring-4 focus:ring-orange-200 bg-gradient-to-r from-purple-800 via-pink-600 to-orange-500 hover:shadow-xl">
-                  Let's Build Something Amazing
+                <button onClick={() => { openModal(); setIsMobileMenuOpen(false); }} className="w-full px-6 py-3 rounded-xl font-bold text-white shadow-lg transition-all bg-gradient-to-r from-orange-500 to-orange-600">
+                  Get Free Quote
                 </button>
               </div>
             </motion.div>

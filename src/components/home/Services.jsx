@@ -1,5 +1,5 @@
-import { motion } from 'framer-motion';
-import { FaMobileAlt, FaGlobe, FaGamepad, FaDesktop, FaPencilRuler, FaCode } from 'react-icons/fa';
+﻿import { motion } from 'framer-motion';
+import { FaMobileAlt, FaGlobe, FaGamepad, FaDesktop, FaPencilRuler, FaCode, FaArrowRight } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { useCtaModal } from '../cta/CtaContext';
 
@@ -8,138 +8,140 @@ const Services = () => {
     {
       icon: FaMobileAlt,
       title: 'Mobile Apps',
-      description: 'iOS, Android, and cross‑platform builds engineered for performance, retention, and growth.',
-      color: 'from-orange-500 to-orange-600',
+      description: 'iOS and Android apps that users love and investors fund. From MVP to App Store in weeks.',
+      results: '25+ apps launched',
+      color: 'from-orange-500 to-red-500',
     },
     {
       icon: FaGlobe,
-      title: 'Websites & Web Apps',
-      description: 'High‑converting sites and web apps with speed scores, SEO structure, and A/B‑ready layouts.',
-      color: 'from-purple-800 to-purple-900',
+      title: 'Web Apps & Sites',
+      description: 'High-converting websites and complex web platforms built for speed and scale.',
+      results: '3x avg conversion lift',
+      color: 'from-purple-500 to-violet-600',
     },
     {
       icon: FaGamepad,
       title: 'Game Development',
-      description: 'Engaging mobile games and gamified experiences that drive retention and re‑engagement.',
-      color: 'from-purple-700 to-purple-800',
+      description: 'Engaging games and gamified experiences that drive retention and virality.',
+      results: '2M+ downloads',
+      color: 'from-pink-500 to-rose-600',
     },
     {
       icon: FaDesktop,
       title: 'Desktop Applications',
-      description: 'Cross‑platform desktop apps that feel native, sync offline, and update reliably.',
-      color: 'from-orange-600 to-red-600',
+      description: 'Cross-platform desktop apps that feel native and work offline.',
+      results: 'Electron & Tauri',
+      color: 'from-emerald-500 to-teal-600',
     },
     {
       icon: FaPencilRuler,
       title: 'UI/UX & Product Design',
-      description: 'Decision‑friendly UX, investor‑ready design systems, and crisp visual language.',
-      color: 'from-purple-900 to-violet-900',
+      description: 'User research, wireframes, and polished designs that convert.',
+      results: 'Figma to code in days',
+      color: 'from-amber-500 to-orange-600',
     },
     {
       icon: FaCode,
       title: 'Custom Software',
-      description: 'Dashboards, automations, and integrations built for ROI and reliability.',
-      color: 'from-purple-700 to-purple-900',
+      description: 'APIs, automations, dashboards, and integrations built for your business.',
+      results: 'Any stack, any scale',
+      color: 'from-indigo-500 to-purple-600',
     },
   ];
 
-  const letterSpacing = (text) => {
-    return text.split('').map((char, index) => (
-      <motion.span
-        key={index}
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.05, delay: index * 0.03 }}
-        className="inline-block"
-      >
-        {char === ' ' ? '\u00A0' : char}
-      </motion.span>
-    ));
-  };
-
   return (
-    <section className="py-20 bg-white">
-      <div className="container-custom">
+    <section className="py-24 bg-white relative overflow-hidden">
+      {/* Subtle background */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#f1f5f9_1px,transparent_1px),linear-gradient(to_bottom,#f1f5f9_1px,transparent_1px)] bg-[size:64px_64px]" />
+
+      <div className="container-custom relative z-10">
         {/* Section Header */}
         <div className="text-center mb-16">
-          <motion.p
+          <motion.span
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-primary font-semibold mb-2 tracking-wider uppercase text-sm"
+            className="inline-block px-4 py-1.5 bg-orange-100 text-orange-600 rounded-full text-sm font-semibold mb-4"
           >
-            Services
-          </motion.p>
+            What We Build
+          </motion.span>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="section-title"
+            className="text-3xl sm:text-4xl md:text-5xl font-heading font-bold text-gray-900"
           >
-            <span className="block">{letterSpacing('Software that')}</span>
-            <span className="block text-gradient">{letterSpacing('sells for you')}</span>
+            Software That
+            <span className="block text-gradient">Sells For You</span>
           </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="text-gray-600 text-lg max-w-2xl mx-auto mt-4"
+          >
+            Full-stack expertise across every platform. One team, end-to-end delivery.
+          </motion.p>
         </div>
 
         {/* Services Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {services.map((service, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              whileHover={{ y: -10 }}
-              className="group cursor-pointer"
+              transition={{ duration: 0.5, delay: index * 0.08 }}
+              whileHover={{ y: -8, scale: 1.02 }}
+              className="group"
             >
               <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 h-full border border-gray-100 relative overflow-hidden">
-                {/* Background Gradient on Hover */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${service.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
+                {/* Hover gradient */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${service.color} opacity-0 group-hover:opacity-5 transition-opacity duration-300`} />
                 
                 {/* Icon */}
                 <motion.div
-                  whileHover={{ scale: 1.1, rotate: 360 }}
-                  transition={{ duration: 0.6 }}
-                  className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${service.color} flex items-center justify-center mb-6 shadow-lg relative z-10`}
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  transition={{ duration: 0.3 }}
+                  className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${service.color} flex items-center justify-center mb-6 shadow-lg relative z-10`}
                 >
-                  <service.icon className="text-white text-3xl" />
+                  <service.icon className="text-white text-2xl" />
                 </motion.div>
 
                 {/* Content */}
-                <h3 className="text-2xl font-heading font-bold text-dark mb-4 group-hover:text-primary transition-colors relative z-10">
+                <h3 className="text-xl font-heading font-bold text-gray-900 mb-3 group-hover:text-orange-500 transition-colors relative z-10">
                   {service.title}
                 </h3>
-                <p className="text-gray-600 leading-relaxed mb-6 relative z-10">
+                <p className="text-gray-600 leading-relaxed mb-4 relative z-10">
                   {service.description}
                 </p>
-
-                {/* Read More Link */}
-                <Link 
-                  to="/services"
-                  className="inline-flex items-center text-primary font-semibold hover:gap-2 transition-all duration-300 relative z-10"
-                >
-                  Read more
-                  <motion.span
-                    animate={{ x: [0, 5, 0] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
+                
+                {/* Results Badge */}
+                <div className="flex items-center justify-between relative z-10">
+                  <span className={`text-sm font-semibold bg-gradient-to-r ${service.color} bg-clip-text text-transparent`}>
+                    {service.results}
+                  </span>
+                  <Link 
+                    to="/services"
+                    className="text-orange-500 hover:text-orange-600 font-semibold text-sm flex items-center gap-1 group-hover:gap-2 transition-all"
                   >
-                    →
-                  </motion.span>
-                </Link>
+                    Learn more <FaArrowRight className="text-xs" />
+                  </Link>
+                </div>
               </div>
             </motion.div>
           ))}
         </div>
 
-        {/* CTA Button */}
+        {/* CTA */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mt-12"
+          className="text-center mt-16"
         >
           <CtaInline />
         </motion.div>
@@ -148,19 +150,22 @@ const Services = () => {
   );
 };
 
-export default Services;
-
-// Small inline CTA component that opens the global modal
+// CTA component
 const CtaInline = () => {
   const { openModal } = useCtaModal?.() ?? { openModal: () => {} };
   return (
     <motion.button
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
+      whileHover={{ scale: 1.03, boxShadow: '0 20px 40px rgba(255, 87, 34, 0.25)' }}
+      whileTap={{ scale: 0.98 }}
       onClick={openModal}
-      className="px-8 py-4 rounded-lg font-semibold text-white text-lg shadow-xl bg-gradient-to-r from-purple-800 via-pink-600 to-orange-500"
+      className="group px-8 py-4 rounded-xl font-bold text-white text-lg shadow-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-red-500 transition-all"
     >
-      Let’s Build Something Amazing
+      <span className="flex items-center gap-2">
+        Start Your Project
+        <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
+      </span>
     </motion.button>
   );
 };
+
+export default Services;
