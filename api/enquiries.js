@@ -13,6 +13,8 @@ async function connectDb() {
 const EnquirySchema = new mongoose.Schema({
   fullName: { type: String, required: true },
   email: { type: String, required: true },
+  countryCode: String,
+  phone: String,
   company: String,
   projectType: String,
   idea: String,
@@ -21,6 +23,9 @@ const EnquirySchema = new mongoose.Schema({
   status: { type: String, default: 'new' },
   notes: String,
   tags: [String],
+  assignees: [String],
+  assignee: String,
+  dueDate: String,
 }, { timestamps: true });
 
 const Enquiry = mongoose.models.Enquiry || mongoose.model('Enquiry', EnquirySchema);
@@ -70,6 +75,7 @@ module.exports = async (req, res) => {
               <div style="background: #f9f9f9; padding: 20px; border-radius: 0 0 8px 8px;">
                 <p><strong>From:</strong> ${enquiry.fullName}</p>
                 <p><strong>Email:</strong> <a href="mailto:${enquiry.email}">${enquiry.email}</a></p>
+                ${enquiry.phone ? `<p><strong>Phone:</strong> <a href="tel:${enquiry.countryCode || ''}${enquiry.phone}">${enquiry.countryCode || ''} ${enquiry.phone}</a></p>` : ''}
                 ${enquiry.company ? `<p><strong>Company:</strong> ${enquiry.company}</p>` : ''}
                 ${enquiry.projectType ? `<p><strong>Project Type:</strong> ${enquiry.projectType}</p>` : ''}
                 ${enquiry.budget ? `<p><strong>Budget:</strong> ${enquiry.budget}</p>` : ''}

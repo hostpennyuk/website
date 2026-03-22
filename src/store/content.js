@@ -125,10 +125,34 @@ export async function addSubscriberAsync(email, source) {
   }
 }
 
-// USERS (local only)
-const defaultUsers = [{ id: 'u1', email: 'profmendel@gmail.com', role: 'Admin' }];
+// TEAM ROLES
+export const teamRoles = [
+  'Web Developer',
+  'Mobile App Developer',
+  'Full Stack Engineer',
+  'UI/UX Designer',
+  'Project Manager',
+  'Business Developer',
+];
+
+// USERS / TEAM MEMBERS (with password for login)
+const defaultUsers = [{ 
+  id: 'u1', 
+  email: 'profmendel@gmail.com', 
+  name: 'Prof Mendel',
+  role: 'Admin',
+  jobTitle: 'Lead Developer',
+  password: 'Gig@50chin',
+  active: true,
+  createdAt: new Date().toISOString()
+}];
 export const getUsers = () => safeParse(localStorage.getItem(KEY.users), defaultUsers);
 export const setUsers = (users) => localStorage.setItem(KEY.users, JSON.stringify(users));
+
+// Get team members who can be assigned to projects
+export const getTeamMembers = () => {
+  return getUsers().filter(u => u.active !== false);
+};
 
 // ACTIVITY LOG
 export const getActivity = () => safeParse(localStorage.getItem(KEY.activity), []);

@@ -25,6 +25,8 @@ import {
   getMetrics,
   getUsers,
   setUsers,
+  getTeamMembers,
+  teamRoles,
   getEmailTemplates,
   setEmailTemplates,
   getSignatures,
@@ -141,44 +143,163 @@ function EnquiriesTab() {
       {viewId && (() => {
         const e = enquiries.find(x=>x.id===viewId);
         if (!e) return null;
+        const teamMembers = getTeamMembers();
+        const currentAssignees = e.assignees || (e.assignee ? [e.assignee] : []);
+        
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center">
             <div className="absolute inset-0 bg-black/40" onClick={()=>setViewId(null)} />
-            <div className="relative bg-white w-full max-w-2xl rounded-2xl shadow-xl p-6 m-3 max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between mb-4">
-                <h4 className="text-lg font-semibold">Enquiry Details</h4>
-                <button onClick={()=>setViewId(null)} className="text-gray-600 hover:text-gray-900">Close</button>
+            <div className="relative bg-white w-full max-w-3xl rounded-2xl shadow-xl p-6 m-3 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-6 pb-4 border-b">
+                <div>
+                  <h4 className="text-xl font-bold text-gray-900">Enquiry Details</h4>
+                  <p className="text-sm text-gray-500 mt-1">Submitted {new Date(e.createdAt).toLocaleString()}</p>
+                </div>
+                <button onClick={()=>setViewId(null)} className="text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                <div><div className="text-gray-500">When</div><div className="font-medium">{new Date(e.createdAt).toLocaleString()}</div></div>
-                <div><div className="text-gray-500">Status</div><div className="font-medium">{e.status}</div></div>
-                <div><div className="text-gray-500">Name</div><div className="font-medium">{e.fullName}</div></div>
-                <div><div className="text-gray-500">Email</div><div className="font-medium break-all">{e.email}</div></div>
-                {e.company && <div className="md:col-span-2"><div className="text-gray-500">Company</div><div className="font-medium">{e.company}</div></div>}
-                <div><div className="text-gray-500">Project Type</div><div className="font-medium">{e.projectType}</div></div>
-                <div><div className="text-gray-500">Budget</div><div className="font-medium">{e.budget}</div></div>
-                <div><div className="text-gray-500">Timeline</div><div className="font-medium">{e.timeline}</div></div>
+              
+              {/* Contact Info Card */}
+              <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-4 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <div className="text-xs font-medium text-purple-600 uppercase tracking-wide">Contact</div>
+                    <div className="text-lg font-semibold text-gray-900 mt-1">{e.fullName}</div>
+                    <a href={`mailto:${e.email}`} className="text-sm text-purple-600 hover:underline">{e.email}</a>
+                    {e.phone && <div className="text-sm text-gray-600 mt-1">{e.countryCode || ''} {e.phone}</div>}
+                  </div>
+                  {e.company && (
+                    <div>
+                      <div className="text-xs font-medium text-purple-600 uppercase tracking-wide">Company</div>
+                      <div className="text-lg font-semibold text-gray-900 mt-1">{e.company}</div>
+                    </div>
+                  )}
+                  <div>
+                    <div className="text-xs font-medium text-purple-600 uppercase tracking-wide">Status</div>
+                    <select
+                      value={e.status}
+                      onChange={(ev) => onUpdate(e.id, { status: ev.target.value })}
+                      className="mt-1 px-3 py-2 border-2 border-purple-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-purple-500 bg-white"
+                    >
+                      {crmStatuses.map((s) => (
+                        <option key={s}>{s}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Project Details */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">Project Type</div>
+                  <div className="text-lg font-semibold text-gray-900 mt-1">{e.projectType}</div>
+                </div>
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">Budget</div>
+                  <div className="text-lg font-semibold text-gray-900 mt-1">{e.budget}</div>
+                </div>
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">Timeline</div>
+                  <div className="text-lg font-semibold text-gray-900 mt-1">{e.timeline}</div>
+                </div>
+              </div>
+              
+              {/* Project Description */}
+              <div className="mb-6">
+                <div className="text-sm font-medium text-gray-700 mb-2">Project Description</div>
+                <div className="bg-gray-50 rounded-xl p-4 whitespace-pre-wrap text-gray-700">{e.idea}</div>
+              </div>
+              
+              {/* Assignment Section */}
+              <div className="bg-blue-50 rounded-xl p-4 mb-6">
+                <div className="text-sm font-medium text-blue-800 mb-3 flex items-center gap-2">
+                  <span>👥</span> Assign Team Members
+                </div>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {teamMembers.map(member => {
+                    const isAssigned = currentAssignees.includes(member.id);
+                    return (
+                      <button
+                        key={member.id}
+                        onClick={() => {
+                          const newAssignees = isAssigned 
+                            ? currentAssignees.filter(a => a !== member.id)
+                            : [...currentAssignees, member.id];
+                          onUpdate(e.id, { assignees: newAssignees, assignee: newAssignees[0] || '' });
+                        }}
+                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
+                          isAssigned 
+                            ? 'bg-blue-600 text-white shadow-md' 
+                            : 'bg-white text-gray-700 border border-gray-200 hover:border-blue-300'
+                        }`}
+                      >
+                        <span className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-400 to-indigo-500 flex items-center justify-center text-white text-xs font-bold">
+                          {(member.name || member.email || '?')[0].toUpperCase()}
+                        </span>
+                        <span>{member.name || member.email}</span>
+                        <span className="text-xs opacity-70">({member.jobTitle || 'Team'})</span>
+                        {isAssigned && <span>✓</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+                {currentAssignees.length === 0 && (
+                  <p className="text-sm text-blue-600">Click on team members above to assign them to this project</p>
+                )}
+              </div>
+              
+              {/* Management Fields */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <div>
-                  <div className="text-gray-500">Assignee</div>
-                  <input className="mt-1 w-full border rounded px-2 py-1" defaultValue={e.assignee||''} onBlur={(ev)=>onUpdate(e.id,{assignee:ev.target.value})} />
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Due Date</label>
+                  <input 
+                    className="w-full border-2 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
+                    type="date" 
+                    defaultValue={e.dueDate||''} 
+                    onBlur={(ev)=>onUpdate(e.id,{dueDate:ev.target.value})} 
+                  />
                 </div>
                 <div>
-                  <div className="text-gray-500">Due date</div>
-                  <input className="mt-1 w-full border rounded px-2 py-1" type="date" defaultValue={e.dueDate||''} onBlur={(ev)=>onUpdate(e.id,{dueDate:ev.target.value})} />
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Tags</label>
+                  <input 
+                    className="w-full border-2 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
+                    placeholder="e.g. B2B | UK | Priority" 
+                    defaultValue={(e.tags||[]).join(' | ')} 
+                    onBlur={(ev)=>onUpdate(e.id,{tags: ev.target.value? ev.target.value.split('|').map(s=>s.trim()):[]})} 
+                  />
                 </div>
-                <div className="md:col-span-2">
-                  <div className="text-gray-500">Tags</div>
-                  <input className="mt-1 w-full border rounded px-2 py-1" placeholder="tags e.g. B2B|UK" defaultValue={(e.tags||[]).join('|')} onBlur={(ev)=>onUpdate(e.id,{tags: ev.target.value? ev.target.value.split('|').map(s=>s.trim()):[]})} />
-                </div>
-                <div className="md:col-span-2"><div className="text-gray-500">Project Description</div><div className="whitespace-pre-wrap mt-1">{e.idea}</div></div>
-                <div className="md:col-span-2">
-                  <div className="text-gray-500">Internal Notes</div>
-                  <textarea className="mt-1 w-full h-24 border rounded px-2 py-2" defaultValue={e.notes||''} onBlur={(ev)=>onUpdate(e.id,{notes:ev.target.value})} />
-                </div>
-                <div className="flex items-center gap-2">
-                  <input id={`spam-${e.id}`} type="checkbox" defaultChecked={!!e.spam} onChange={(ev)=>onUpdate(e.id,{spam:ev.target.checked})} />
-                  <label htmlFor={`spam-${e.id}`} className="text-gray-700">Mark as spam</label>
-                </div>
+              </div>
+              
+              {/* Internal Notes */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Internal Notes</label>
+                <textarea 
+                  className="w-full h-24 border-2 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
+                  placeholder="Add notes about this project..."
+                  defaultValue={e.notes||''} 
+                  onBlur={(ev)=>onUpdate(e.id,{notes:ev.target.value})} 
+                />
+              </div>
+              
+              {/* Footer */}
+              <div className="flex items-center justify-between pt-4 border-t">
+                <label className="flex items-center gap-2 cursor-pointer text-gray-600">
+                  <input 
+                    type="checkbox" 
+                    defaultChecked={!!e.spam} 
+                    onChange={(ev)=>onUpdate(e.id,{spam:ev.target.checked})} 
+                    className="w-4 h-4 rounded text-red-500"
+                  />
+                  <span className="text-sm">Mark as spam</span>
+                </label>
+                <button 
+                  onClick={()=>setViewId(null)} 
+                  className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors"
+                >
+                  Close
+                </button>
               </div>
             </div>
           </div>
@@ -797,25 +918,169 @@ function ActivityTab() {
 
 function UsersTab() {
   const [users, setLocUsers] = useState(()=> getUsers());
-  const add = () => { const next=[...users,{id:`${Date.now()}`,email:'',role:'Editor'}]; setLocUsers(next); setUsers(next); };
-  const update=(id,patch)=>{ const next=users.map(u=>u.id===id?{...u,...patch}:u); setLocUsers(next); setUsers(next); };
-  const remove=(id)=>{ const next=users.filter(u=>u.id!==id); setLocUsers(next); setUsers(next); };
+  const [showPassword, setShowPassword] = useState({});
+  
+  const add = () => { 
+    const next=[...users,{
+      id:`${Date.now()}`,
+      email:'',
+      name:'',
+      role:'Contributor',
+      jobTitle:'Web Developer',
+      password:'',
+      active: true,
+      createdAt: new Date().toISOString()
+    }]; 
+    setLocUsers(next); 
+    setUsers(next); 
+  };
+  
+  const update=(id,patch)=>{ 
+    const next=users.map(u=>u.id===id?{...u,...patch}:u); 
+    setLocUsers(next); 
+    setUsers(next); 
+  };
+  
+  const remove=(id)=>{ 
+    const next=users.filter(u=>u.id!==id); 
+    setLocUsers(next); 
+    setUsers(next); 
+  };
+
+  const togglePassword = (id) => {
+    setShowPassword(prev => ({...prev, [id]: !prev[id]}));
+  };
+
+  const generatePassword = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789@#$%';
+    let pass = '';
+    for (let i = 0; i < 12; i++) {
+      pass += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return pass;
+  };
+
   return (
-    <Section title="Users" actions={<button onClick={add} className="btn-primary px-3 py-2 rounded-lg text-white">Add</button>}>
-      <div className="space-y-3">
+    <Section title="Team Members" actions={
+      <button onClick={add} className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 px-4 py-2 rounded-lg text-white font-medium flex items-center gap-2 transition-all shadow-md">
+        <span className="text-lg">+</span> Add Team Member
+      </button>
+    }>
+      <div className="space-y-4">
         {users.map(u=> (
-          <div key={u.id} className="p-4 border rounded-xl flex gap-3 items-center">
-            <input className="border rounded px-3 py-2 flex-1" placeholder="Email" value={u.email} onChange={(e)=>update(u.id,{email:e.target.value})} />
-            <select className="border rounded px-2 py-2" value={u.role} onChange={(e)=>update(u.id,{role:e.target.value})}>
-              <option>Admin</option>
-              <option>Editor</option>
-              <option>Viewer</option>
-            </select>
-            <button onClick={()=>remove(u.id)} className="text-red-600 text-sm underline">Remove</button>
+          <div key={u.id} className={`p-5 border-2 rounded-xl ${u.active !== false ? 'border-gray-200 bg-white' : 'border-gray-100 bg-gray-50 opacity-60'}`}>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+              {/* Name */}
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Full Name</label>
+                <input 
+                  className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
+                  placeholder="John Smith" 
+                  value={u.name||''} 
+                  onChange={(e)=>update(u.id,{name:e.target.value})} 
+                />
+              </div>
+              
+              {/* Email */}
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Email</label>
+                <input 
+                  className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
+                  placeholder="john@hostpenny.co.uk" 
+                  type="email"
+                  value={u.email} 
+                  onChange={(e)=>update(u.id,{email:e.target.value})} 
+                />
+              </div>
+              
+              {/* Job Title */}
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Job Title</label>
+                <select 
+                  className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
+                  value={u.jobTitle||'Web Developer'} 
+                  onChange={(e)=>update(u.id,{jobTitle:e.target.value})}
+                >
+                  {teamRoles.map(role => (
+                    <option key={role} value={role}>{role}</option>
+                  ))}
+                </select>
+              </div>
+              
+              {/* Access Level */}
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Access Level</label>
+                <select 
+                  className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
+                  value={u.role} 
+                  onChange={(e)=>update(u.id,{role:e.target.value})}
+                >
+                  <option value="Admin">Admin (Full Access)</option>
+                  <option value="Contributor">Contributor (View & Edit)</option>
+                  <option value="Viewer">Viewer (Read Only)</option>
+                </select>
+              </div>
+            </div>
+            
+            {/* Password Row */}
+            <div className="flex flex-wrap items-end gap-4 pt-3 border-t border-gray-100">
+              <div className="flex-1 min-w-[200px]">
+                <label className="block text-xs font-medium text-gray-500 mb-1">Login Password</label>
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <input 
+                      type={showPassword[u.id] ? 'text' : 'password'}
+                      className="w-full border rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-purple-500 focus:border-transparent font-mono" 
+                      placeholder="Create password" 
+                      value={u.password||''} 
+                      onChange={(e)=>update(u.id,{password:e.target.value})} 
+                    />
+                    <button 
+                      type="button"
+                      onClick={() => togglePassword(u.id)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      {showPassword[u.id] ? '👁️' : '👁️‍🗨️'}
+                    </button>
+                  </div>
+                  <button 
+                    onClick={() => update(u.id, {password: generatePassword()})}
+                    className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-700 whitespace-nowrap"
+                  >
+                    Generate
+                  </button>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={u.active !== false} 
+                    onChange={(e) => update(u.id, {active: e.target.checked})}
+                    className="w-4 h-4 rounded text-purple-600 focus:ring-purple-500"
+                  />
+                  <span className="text-sm text-gray-600">Active</span>
+                </label>
+                
+                {u.id !== 'u1' && (
+                  <button 
+                    onClick={()=>remove(u.id)} 
+                    className="text-red-600 hover:text-red-700 text-sm font-medium px-3 py-1 hover:bg-red-50 rounded-lg transition-colors"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         ))}
       </div>
-      <p className="text-xs text-gray-500 mt-3">Note: Local users are not enforced for login yet; primary admin credential remains required.</p>
+      <div className="mt-4 p-4 bg-purple-50 rounded-xl border border-purple-100">
+        <p className="text-sm text-purple-800">
+          <strong>💡 Quick Tip:</strong> Team members can log in using their email and password. Assign them to projects in the Enquiries tab.
+        </p>
+      </div>
     </Section>
   );
 }
@@ -848,32 +1113,174 @@ function BackupTab() {
 function DashboardTab() {
   const m = getMetrics();
   const enquiries = getEnquiries();
+  const teamMembers = getTeamMembers();
   const byStatus = crmStatuses.map(s=> ({ s, count: enquiries.filter(e=>e.status===s).length }));
   const today = new Date(); today.setHours(0,0,0,0);
   const todayCount = enquiries.filter(e=> new Date(e.createdAt) >= today).length;
   const weekAgo = new Date(Date.now()-7*24*3600*1000);
   const weekCount = enquiries.filter(e=> new Date(e.createdAt) >= weekAgo).length;
+  const monthAgo = new Date(Date.now()-30*24*3600*1000);
+  const monthCount = enquiries.filter(e=> new Date(e.createdAt) >= monthAgo).length;
+  const totalValue = enquiries.filter(e => e.status === 'Closed Won').length;
+  
+  const statusColors = {
+    'New': 'from-blue-500 to-blue-600',
+    'Qualified': 'from-purple-500 to-purple-600',
+    'In Progress': 'from-amber-500 to-amber-600',
+    'Proposal Sent': 'from-indigo-500 to-indigo-600',
+    'Closed Won': 'from-green-500 to-green-600',
+    'Closed Lost': 'from-red-500 to-red-600',
+    'On Hold': 'from-gray-500 to-gray-600',
+  };
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <Section title="At a glance">
-        <div className="grid grid-cols-3 gap-4 text-center">
-          <div><div className="text-3xl font-bold">{todayCount}</div><div className="text-sm text-gray-600">Enquiries today</div></div>
-          <div><div className="text-3xl font-bold">{weekCount}</div><div className="text-sm text-gray-600">Last 7 days</div></div>
-          <div><div className="text-3xl font-bold">{m.video_open||0}</div><div className="text-sm text-gray-600">Video plays</div></div>
+    <div className="space-y-6">
+      {/* Welcome Header */}
+      <div className="bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 rounded-2xl p-6 text-white">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold">Welcome back! 👋</h2>
+            <p className="text-purple-100 mt-1">Here's what's happening with your business today.</p>
+          </div>
+          <div className="text-right">
+            <div className="text-sm text-purple-200">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
+          </div>
         </div>
-      </Section>
-      <Section title="Pipeline">
-        <ul className="space-y-1">
-          {byStatus.map(x=> (<li key={x.s} className="flex justify-between text-sm"><span>{x.s}</span><span className="font-semibold">{x.count}</span></li>))}
-        </ul>
-      </Section>
-      <Section title="Needs attention">
-        <ul className="space-y-2 text-sm">
+      </div>
+      
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+          <div className="flex items-center justify-between">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-xl">
+              📬
+            </div>
+            <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">Today</span>
+          </div>
+          <div className="mt-4">
+            <div className="text-3xl font-bold text-gray-900">{todayCount}</div>
+            <div className="text-sm text-gray-500">New Enquiries</div>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+          <div className="flex items-center justify-between">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white text-xl">
+              📊
+            </div>
+            <span className="text-xs font-medium text-purple-600 bg-purple-50 px-2 py-1 rounded-full">7 days</span>
+          </div>
+          <div className="mt-4">
+            <div className="text-3xl font-bold text-gray-900">{weekCount}</div>
+            <div className="text-sm text-gray-500">This Week</div>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+          <div className="flex items-center justify-between">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white text-xl">
+              📈
+            </div>
+            <span className="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded-full">30 days</span>
+          </div>
+          <div className="mt-4">
+            <div className="text-3xl font-bold text-gray-900">{monthCount}</div>
+            <div className="text-sm text-gray-500">This Month</div>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+          <div className="flex items-center justify-between">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center text-white text-xl">
+              🎯
+            </div>
+            <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">Won</span>
+          </div>
+          <div className="mt-4">
+            <div className="text-3xl font-bold text-gray-900">{totalValue}</div>
+            <div className="text-sm text-gray-500">Deals Closed</div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Pipeline */}
+        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Sales Pipeline</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {byStatus.slice(0, 4).map(x=> (
+              <div key={x.s} className={`bg-gradient-to-br ${statusColors[x.s] || 'from-gray-500 to-gray-600'} rounded-xl p-4 text-white`}>
+                <div className="text-2xl font-bold">{x.count}</div>
+                <div className="text-sm opacity-90">{x.s}</div>
+              </div>
+            ))}
+          </div>
+          <div className="grid grid-cols-3 gap-3 mt-3">
+            {byStatus.slice(4).map(x=> (
+              <div key={x.s} className={`bg-gradient-to-br ${statusColors[x.s] || 'from-gray-500 to-gray-600'} rounded-xl p-4 text-white`}>
+                <div className="text-2xl font-bold">{x.count}</div>
+                <div className="text-sm opacity-90">{x.s}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        {/* Team Members */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Your Team</h3>
+          <div className="space-y-3">
+            {teamMembers.slice(0, 5).map(member => (
+              <div key={member.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-indigo-500 flex items-center justify-center text-white font-bold">
+                  {(member.name || member.email || '?')[0].toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-gray-900 truncate">{member.name || member.email}</div>
+                  <div className="text-xs text-gray-500">{member.jobTitle || member.role}</div>
+                </div>
+                <div className={`w-2 h-2 rounded-full ${member.active !== false ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+              </div>
+            ))}
+            {teamMembers.length === 0 && (
+              <p className="text-gray-500 text-sm text-center py-4">No team members yet. Add your first team member!</p>
+            )}
+          </div>
+        </div>
+      </div>
+      
+      {/* Needs Attention */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900">⚡ Needs Attention</h3>
+          <span className="text-xs text-gray-500">New & overdue enquiries</span>
+        </div>
+        <div className="space-y-3">
           {enquiries.filter(e=> e.status==='New' || (e.dueDate && new Date(e.dueDate)<new Date())).slice(0,5).map(e=> (
-            <li key={e.id} className="flex justify-between"><span>{e.fullName} — {e.projectType}</span><span className="text-gray-500">{new Date(e.createdAt).toLocaleDateString()}</span></li>
+            <div key={e.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+              <div className="flex items-center gap-3">
+                <div className={`w-2 h-2 rounded-full ${e.status === 'New' ? 'bg-blue-500' : 'bg-red-500'}`}></div>
+                <div>
+                  <div className="font-medium text-gray-900">{e.fullName}</div>
+                  <div className="text-sm text-gray-500">{e.projectType} • {e.budget}</div>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className={`text-xs font-medium px-2 py-1 rounded-full ${e.status === 'New' ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700'}`}>
+                  {e.status === 'New' ? 'New' : 'Overdue'}
+                </div>
+                <div className="text-xs text-gray-400 mt-1">{new Date(e.createdAt).toLocaleDateString()}</div>
+              </div>
+            </div>
           ))}
-        </ul>
-      </Section>
+          {enquiries.filter(e=> e.status==='New' || (e.dueDate && new Date(e.dueDate)<new Date())).length === 0 && (
+            <div className="text-center py-8 text-gray-500">
+              <div className="text-4xl mb-2">✨</div>
+              <p>All caught up! No urgent items.</p>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -904,17 +1311,28 @@ export default function Admin() {
   const [session, setSession] = useState(() => getAdminSession());
   const [tab, setTab] = useState('dashboard');
   const [login, setLogin] = useState({ email: '', password: '' });
+  const [showPassword, setShowPassword] = useState(false);
   const loggedIn = !!session;
 
   const doLogin = (e) => {
     e.preventDefault();
+    // Check main admin credentials
     if (login.email === ADMIN_EMAIL && login.password === ADMIN_PASSWORD) {
-      const s = { email: login.email, loggedInAt: new Date().toISOString() };
+      const s = { email: login.email, name: 'Admin', role: 'Admin', loggedInAt: new Date().toISOString() };
       setAdminSession(s);
       setSession(s);
-    } else {
-      alert('Invalid credentials');
+      return;
     }
+    // Check team member credentials
+    const users = getUsers();
+    const user = users.find(u => u.email.toLowerCase() === login.email.toLowerCase() && u.password === login.password && u.active !== false);
+    if (user) {
+      const s = { email: user.email, name: user.name, role: user.role, jobTitle: user.jobTitle, loggedInAt: new Date().toISOString() };
+      setAdminSession(s);
+      setSession(s);
+      return;
+    }
+    alert('Invalid credentials');
   };
 
   const logout = () => {
@@ -922,24 +1340,85 @@ export default function Admin() {
     setSession(null);
   };
 
+  const menuItems = [
+    { key:'dashboard', label:'Overview', icon:'📊' },
+    { key:'enquiries', label:'Enquiries', icon:'📬' },
+    { key:'inbox', label:'Inbox', icon:'📥' },
+    { key:'testimonials', label:'Testimonials', icon:'💬' },
+    { key:'portfolio', label:'Portfolio', icon:'🎨' },
+    { key:'emails', label:'Emails', icon:'✉️' },
+    { key:'templates', label:'Templates', icon:'📝' },
+    { key:'signatures', label:'Signatures', icon:'✍️' },
+    { key:'settings', label:'Settings', icon:'⚙️' },
+    { key:'seo', label:'SEO', icon:'🔍' },
+    { key:'subscribers', label:'Subscribers', icon:'👥' },
+    { key:'activity', label:'Activity', icon:'📈' },
+    { key:'users', label:'Team', icon:'👨‍💻' },
+    { key:'backup', label:'Backup', icon:'💾' },
+  ];
+
   if (!loggedIn) {
     return (
-      <div className="pt-24 min-h-screen bg-gray-50">
-        <div className="container-custom">
-          <div className="max-w-md mx-auto bg-white border rounded-2xl shadow-sm p-8">
-            <h1 className="text-2xl font-bold mb-6">Admin Login</h1>
-            <form onSubmit={doLogin} className="space-y-4">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
+        {/* Animated background */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-0 -left-1/4 w-[600px] h-[600px] rounded-full blur-[120px] bg-purple-600/30 animate-pulse"></div>
+          <div className="absolute bottom-0 -right-1/4 w-[600px] h-[600px] rounded-full blur-[120px] bg-indigo-600/30 animate-pulse" style={{animationDelay: '1s'}}></div>
+        </div>
+        
+        <div className="relative w-full max-w-md">
+          {/* Logo */}
+          <div className="text-center mb-8">
+            <img src="/logo.gif" alt="HostPenny" className="h-16 mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-white">Admin Dashboard</h1>
+            <p className="text-purple-200 mt-2">Sign in to manage your business</p>
+          </div>
+          
+          {/* Login Card */}
+          <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-8 border border-white/20 shadow-2xl">
+            <form onSubmit={doLogin} className="space-y-5">
               <div>
-                <label className="block text-sm font-medium mb-1">Email</label>
-                <input type="email" className="w-full border rounded px-3 py-2" value={login.email} onChange={(e)=>setLogin({...login, email:e.target.value})} />
+                <label className="block text-sm font-medium text-white/80 mb-2">Email Address</label>
+                <input 
+                  type="email" 
+                  className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all" 
+                  placeholder="you@example.com"
+                  value={login.email} 
+                  onChange={(e)=>setLogin({...login, email:e.target.value})} 
+                />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Password</label>
-                <input type="password" className="w-full border rounded px-3 py-2" value={login.password} onChange={(e)=>setLogin({...login, password:e.target.value})} />
+                <label className="block text-sm font-medium text-white/80 mb-2">Password</label>
+                <div className="relative">
+                  <input 
+                    type={showPassword ? 'text' : 'password'} 
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all pr-12" 
+                    placeholder="••••••••"
+                    value={login.password} 
+                    onChange={(e)=>setLogin({...login, password:e.target.value})} 
+                  />
+                  <button 
+                    type="button" 
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 hover:text-white"
+                  >
+                    {showPassword ? '🙈' : '👁️'}
+                  </button>
+                </div>
               </div>
-              <button type="submit" className="w-full btn-primary text-white py-3 rounded-lg">Login</button>
+              <button 
+                type="submit" 
+                className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white py-3 rounded-xl font-semibold shadow-lg shadow-purple-500/30 transition-all hover:shadow-purple-500/50 hover:scale-[1.02]"
+              >
+                Sign In
+              </button>
             </form>
           </div>
+          
+          {/* Footer */}
+          <p className="text-center text-white/40 text-sm mt-6">
+            Secure admin access • HostPenny © {new Date().getFullYear()}
+          </p>
         </div>
       </div>
     );
@@ -947,52 +1426,63 @@ export default function Admin() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header with logo and title only */}
-      <div className="border-b bg-[#4c1d95] text-white">
-        <div className="container-custom py-4 flex items-center gap-3">
-          <img src="/logo.gif" alt="Logo" className="h-16 w-auto" />
-          <h1 className="text-xl font-semibold">Admin Dashboard</h1>
+      {/* Header */}
+      <div className="border-b bg-gradient-to-r from-purple-700 via-indigo-700 to-purple-700 text-white shadow-lg">
+        <div className="container-custom py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img src="/logo.gif" alt="Logo" className="h-12 w-auto" />
+            <div>
+              <h1 className="text-lg font-bold">HostPenny Admin</h1>
+              <p className="text-xs text-purple-200">Manage your business</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="text-right">
+              <div className="text-sm font-medium">{session.name || session.email}</div>
+              <div className="text-xs text-purple-200">{session.jobTitle || session.role || 'Admin'}</div>
+            </div>
+            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-bold">
+              {(session.name || session.email || 'A')[0].toUpperCase()}
+            </div>
+          </div>
         </div>
       </div>
 
       <div className="container-custom py-6">
         <div className="flex gap-6">
           {/* Sidebar */}
-          <aside className="w-64 shrink-0 bg-white border rounded-xl p-3 h-[calc(100vh-11rem)] sticky top-24 overflow-auto">
-            <nav className="space-y-1">
-              {[
-                { key:'dashboard', label:'Overview' },
-                { key:'enquiries', label:'Enquiries' },
-                { key:'inbox', label:'Inbox' },
-                { key:'testimonials', label:'Testimonials' },
-                { key:'portfolio', label:'Portfolio' },
-                { key:'emails', label:'Emails' },
-                { key:'templates', label:'Templates' },
-                { key:'signatures', label:'Signatures' },
-                { key:'settings', label:'Settings' },
-                { key:'seo', label:'SEO' },
-                { key:'subscribers', label:'Subscribers' },
-                { key:'activity', label:'Activity' },
-                { key:'users', label:'Users' },
-                { key:'backup', label:'Backup' },
-              ].map((item)=> (
-                <button
-                  key={item.key}
-                  onClick={()=>setTab(item.key)}
-                  className={`w-full text-left px-3 py-2 rounded-lg border transition-colors ${tab===item.key ? 'bg-purple-600 text-white border-purple-600' : 'bg-white hover:bg-gray-50'}`}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </nav>
+          <aside className="w-64 shrink-0">
+            <div className="bg-white border rounded-2xl p-4 shadow-sm sticky top-6">
+              <nav className="space-y-1">
+                {menuItems.map((item)=> (
+                  <button
+                    key={item.key}
+                    onClick={()=>setTab(item.key)}
+                    className={`w-full text-left px-4 py-3 rounded-xl transition-all flex items-center gap-3 ${
+                      tab===item.key 
+                        ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md' 
+                        : 'hover:bg-gray-50 text-gray-700'
+                    }`}
+                  >
+                    <span className="text-lg">{item.icon}</span>
+                    <span className="font-medium">{item.label}</span>
+                  </button>
+                ))}
+              </nav>
 
-            <div className="mt-4 pt-4 border-t">
-              <button onClick={logout} className="w-full px-3 py-2 rounded-lg border text-sm">Logout</button>
+              <div className="mt-4 pt-4 border-t">
+                <button 
+                  onClick={logout} 
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-red-600 hover:border-red-200 transition-all flex items-center justify-center gap-2"
+                >
+                  <span>🚪</span> Logout
+                </button>
+              </div>
             </div>
           </aside>
 
           {/* Main content */}
-          <main className="flex-1 space-y-6">
+          <main className="flex-1 min-w-0">
             {tab === 'dashboard' && <DashboardTab />}
             {tab === 'enquiries' && <EnquiriesTab />}
             {tab === 'inbox' && <Inbox />}
