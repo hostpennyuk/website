@@ -585,10 +585,15 @@ function EmailsTab() {
 
   function renderHtml(body, style, logoUrl, signature, subject = '', preheader = '', ctaLabel = '', ctaUrl = '') {
     const safe = (s) => (s || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const safeAttr = (s) => (s || '').replace(/"/g, '&quot;');
     const safeBody = (body || '').replace(/\n/g, '<br/>');
+    const signatureImageUrl = signature?.imageUrl && /^https?:\/\//i.test(signature.imageUrl.trim())
+      ? signature.imageUrl.trim()
+      : '';
     const sigBlock = signature ? `
       <div style="margin-top:24px; color:#555;">
         <div>${safe(signature.signature)}</div>
+        ${signatureImageUrl ? `<div style="margin-top:12px;"><img src="${safeAttr(signatureImageUrl)}" alt="Signature" style="max-height:80px; width:auto; display:block;"/></div>` : ''}
         <div style="font-weight:600; margin-top:6px;">${safe(signature.fullName)}</div>
         <div style="font-size:12px; color:#777;">${safe(signature.designation)}</div>
       </div>` : '';
@@ -1465,11 +1470,11 @@ function DashboardTab() {
 
 function SignaturesTab() {
   const [items, setItems] = useState(() => getSignatures());
-  const add = () => { const next=[{id:`${Date.now()}`,name:'New Signature',fullName:'Your Name',designation:'Role',signature:'Best regards,'},...items]; setItems(next); setSignatures(next); };
+  const add = () => { const next=[{id:`${Date.now()}`,name:'New Signature',fullName:'Your Name',designation:'Role',signature:'Best regards,', imageUrl:''},...items]; setItems(next); setSignatures(next); };
   const update = (id, patch) => { const next=items.map(s=>s.id===id?{...s,...patch}:s); setItems(next); setSignatures(next); };
   const remove = (id) => { const next=items.filter(s=>s.id!==id); setItems(next); setSignatures(next); };
   return (
-    <Section title="Signatures" actions={<button onClick={add} className="btn-primary px-3 py-2 rounded-lg text-white">Add</button>}>
+    <Section title="Signatures" icon={HiOutlinePencilAlt} actions={<button onClick={add} className="btn-primary px-3 py-2 rounded-lg text-white">Add</button>}>
       <div className="space-y-4">
         {items.map(s=> (
           <div key={s.id} className="p-4 border rounded-xl grid grid-cols-1 md:grid-cols-3 gap-3 items-start">
@@ -1477,6 +1482,13 @@ function SignaturesTab() {
             <input className="border rounded px-3 py-2" placeholder="Full Name" value={s.fullName} onChange={(e)=>update(s.id,{fullName:e.target.value})} />
             <input className="border rounded px-3 py-2" placeholder="Designation" value={s.designation} onChange={(e)=>update(s.id,{designation:e.target.value})} />
             <input className="md:col-span-2 border rounded px-3 py-2" placeholder="Closing (e.g., Best regards,)" value={s.signature} onChange={(e)=>update(s.id,{signature:e.target.value})} />
+            <input className="border rounded px-3 py-2" placeholder="Signature image URL (https://...)" value={s.imageUrl || ''} onChange={(e)=>update(s.id,{imageUrl:e.target.value})} />
+            {s.imageUrl && (
+              <div className="md:col-span-2 border rounded-lg p-3 bg-gray-50">
+                <div className="text-xs text-gray-500 mb-2">Image Preview</div>
+                <img src={s.imageUrl} alt="Signature preview" className="max-h-16 w-auto" />
+              </div>
+            )}
             <div className="text-right md:col-span-1"><button onClick={()=>remove(s.id)} className="text-red-600 text-sm underline">Delete</button></div>
           </div>
         ))}

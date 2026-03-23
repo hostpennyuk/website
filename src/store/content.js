@@ -302,9 +302,9 @@ export const deleteEmailTemplate = (id) => setEmailTemplates(getEmailTemplates()
 
 // Email signatures
 const defaultSignatures = [
-  { id: 'sig1', name: 'Default', fullName: 'Your Name', designation: 'Founder, HostPenny', signature: 'Best regards,' },
-  { id: 'sig2', name: 'Sales', fullName: 'Your Name', designation: 'Growth Lead', signature: 'Cheers,' },
-  { id: 'sig3', name: 'Support', fullName: 'Your Name', designation: 'Customer Success', signature: 'Thanks,' },
+  { id: 'sig1', name: 'Default', fullName: 'Your Name', designation: 'Founder, HostPenny', signature: 'Best regards,', imageUrl: '' },
+  { id: 'sig2', name: 'Sales', fullName: 'Your Name', designation: 'Growth Lead', signature: 'Cheers,', imageUrl: '' },
+  { id: 'sig3', name: 'Support', fullName: 'Your Name', designation: 'Customer Success', signature: 'Thanks,', imageUrl: '' },
 ];
 export const getSignatures = () => safeParse(localStorage.getItem(KEY.signatures), defaultSignatures);
 export const setSignatures = (items) => localStorage.setItem(KEY.signatures, JSON.stringify(items));
