@@ -44,20 +44,31 @@ module.exports = async (req, res) => {
   }
 
   try {
-    await connectDb();
+    // Default stats/recipients so reminders can still send even if DB is down
+    let totalEnquiries = 0;
+    let newEnquiries = 0;
+    let todayEnquiries = 0;
+    let weekEnquiries = 0;
+    let dbTeamMembers = [];
 
-    // Get stats for the email
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const weekAgo = new Date(Date.now() - 7 * 24 * 3600 * 1000);
+    try {
+      await connectDb();
 
-    const totalEnquiries = await Enquiry.countDocuments();
-    const newEnquiries = await Enquiry.countDocuments({ status: 'New' });
-    const todayEnquiries = await Enquiry.countDocuments({ createdAt: { $gte: today } });
-    const weekEnquiries = await Enquiry.countDocuments({ createdAt: { $gte: weekAgo } });
+      // Get stats for the email
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const weekAgo = new Date(Date.now() - 7 * 24 * 3600 * 1000);
 
-    // Get team members from DB (active only)
-    const dbTeamMembers = await TeamMember.find({ active: true }).lean();
+      totalEnquiries = await Enquiry.countDocuments();
+      newEnquiries = await Enquiry.countDocuments({ status: 'New' });
+      todayEnquiries = await Enquiry.countDocuments({ createdAt: { $gte: today } });
+      weekEnquiries = await Enquiry.countDocuments({ createdAt: { $gte: weekAgo } });
+
+      // Get team members from DB (active only)
+      dbTeamMembers = await TeamMember.find({ active: true }).lean();
+    } catch (dbError) {
+      console.error('Daily reminder DB unavailable, sending with fallback recipients only:', dbError.message);
+    }
 
     // Always include required recipients + optional admin fallback
     const baseRecipients = [
