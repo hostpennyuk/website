@@ -20,6 +20,11 @@ const TeamMemberSchema = new mongoose.Schema({
 
 const TeamMember = mongoose.models.TeamMember || mongoose.model('TeamMember', TeamMemberSchema);
 
+const REQUIRED_REMINDER_EMAILS = [
+  { email: 'ritailoka@gmail.com', name: 'Rita' },
+  { email: 'profmendel@gmail.com', name: 'Prof Mendel' },
+];
+
 // Enquiry Model for counting
 const EnquirySchema = new mongoose.Schema({
   fullName: String,
@@ -51,13 +56,32 @@ module.exports = async (req, res) => {
     const todayEnquiries = await Enquiry.countDocuments({ createdAt: { $gte: today } });
     const weekEnquiries = await Enquiry.countDocuments({ createdAt: { $gte: weekAgo } });
 
-    // Get team members from DB or use fallback
-    let teamMembers = await TeamMember.find({ active: true });
-    
-    // If no team members in DB, use the admin email from env
-    if (teamMembers.length === 0) {
-      teamMembers = [{ email: process.env.ADMIN_EMAIL || 'hostpennyuk@gmail.com', name: 'Admin' }];
+    // Get team members from DB (active only)
+    const dbTeamMembers = await TeamMember.find({ active: true }).lean();
+
+    // Always include required recipients + optional admin fallback
+    const baseRecipients = [
+      ...REQUIRED_REMINDER_EMAILS,
+      ...(process.env.ADMIN_EMAIL ? [{ email: process.env.ADMIN_EMAIL, name: 'Admin' }] : []),
+      ...dbTeamMembers.map((member) => ({
+        email: member.email,
+        name: member.name,
+      })),
+    ];
+
+    const recipientMap = new Map();
+    for (const recipient of baseRecipients) {
+      const normalizedEmail = String(recipient?.email || '').trim().toLowerCase();
+      if (!normalizedEmail) continue;
+      if (!recipientMap.has(normalizedEmail)) {
+        recipientMap.set(normalizedEmail, {
+          email: normalizedEmail,
+          name: recipient?.name || '',
+        });
+      }
     }
+
+    const teamMembers = Array.from(recipientMap.values());
 
     const { Resend } = require('resend');
     const resend = new Resend(process.env.RESEND_API_KEY);
